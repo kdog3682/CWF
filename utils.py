@@ -8762,22 +8762,27 @@ class Github:
 
     @staticmethod
     def createRepo(repo, items = None, user = 'kdog3682', token = ENV_GITHUB_TOKEN, standard = False):
+        print(  'starting process: CREATE_REPO'  )
 
         if standard:
             items = 'methods.js utils.js index.html utils.py'
 
         backupMessage = 'backup ' + str(items) 
         commands = []
+
         commands.append('curl -H "Authorization: token ' + token + '" --data \'{"name":"' + repo + '"}\' https://api.github.com/user/repos')
 
         commands.append('cd ~/' + repo)
         commands.append("git init")
-        commands.append('git remote add origin https://github.com/' + user + '/' + repo + '.git')
+        commands.append("git remote set-url origin git@github.com:" + user + '/' + repo + '.git')
+
         if items:
             commands.append('git add ' + items)
             commands.append('git commit -m "' + backupMessage + '"')
             commands.append("git push -u origin master")
         result = commander(commands, delimiter = '&&')
+        print(  result  )
+        print(  'finished'  )
     
 
     @staticmethod
@@ -8791,13 +8796,13 @@ class Github:
         result = commander(commands, delimiter = '&&')
     
     @staticmethod
-    def delete(repo, user, token):
+    def _delete(repo, user, token):
         print(  'deleting repo', repo  )
         command = 'curl -X DELETE -H "Accept: application/vnd.github.v3+json" -H "Authorization: token ' + token + '"' + 'https://api.github.com/repos/' + user + '/' + repo
         return commander(command)
 
     def delete(self, repo):
-        Github.delete(repo, self.user, self.token)
+        Github._delete(repo, self.user, self.token)
         Github.listRepos(self.user)
 
     @staticmethod

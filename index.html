@@ -1,0 +1,1064 @@
+<html>
+    <!-- <script src="https://unpkg.com/prettier@1.13.0/standalone.js"></script>-->
+    <!-- <script src="https://unpkg.com/prettier@1.13.0/parser-babylon.js"></script>-->
+    <!-- <script src="./skulptmin.js"></script>-->
+    <!-- <script src="./skulptlib.js"></script>-->
+
+    <script src="./vue.js"></script>
+    <script src="./codemirror.js"></script>
+    <link rel="stylesheet" href="./codemirror.css" />
+    <!-- <link rel="stylesheet" href="./docs.css" />-->
+    <!-- <script src="./jump-to-line.js"></script>    -->
+    <!-- <script src="./search.js"></script>    -->
+    <!-- <script src="./searchcursor.js"></script>    -->
+
+
+
+    <script src="./methods.js"></script>
+    <script src="./utils.js" type="text/javascript" charset="UTF-8"></script>
+
+   <script src="tempasset.js"></script>   
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/velocity/1.2.3/velocity.min.js"></script>-->
+    <!-- <script src="vuegithub.js"></script>-->
+
+
+    
+
+    <style>
+    div.CodeMirror pre.CodeMirror-cursor {
+      width: auto;
+      border: 0;
+      background: transparent;
+      background: rgba(0, 200, 0, .4);
+    }
+
+    .codeframe {
+        background: white;
+    }
+    .testframe {
+        border: 1px solid red;
+        background: yellow;
+        padding: 20px;
+    }
+    * {
+        box-sizing: border-box;
+    }
+    hr {
+        margin: 20px 0px;
+    }
+    iframe {
+        background: none;
+        border: none;
+        min-height: 60vh;
+    }
+    .mb50 {
+        margin-left: 20px;
+        margin-bottom: 50px;
+    }
+    .background-yellow {
+        margin: 20px 0;
+        border: 2px solid red;
+    }
+.fade-enter-active, .fade-leave-active {
+  transition: opacity .5s;
+}
+.fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
+  opacity: 0;
+}
+        .CodeMirror-focused .CodeMirror-activeline-background {
+            background: 
+        }
+        .foo {
+            display: none;
+            background: yellow;
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 200px;
+            height: 40px;
+        }
+        @media print {
+            .CodeMirror,
+            button,
+            input,
+            p(:not .foo),
+            h1,
+            div(:not 
+                display: none;
+            }
+            .foo {
+                background: red;
+            }
+            p.foo {
+                display: block;
+            }
+            p {
+                font-family: georgia, times, serif;
+            }
+
+            @page {
+                margin: 2cm;
+            }
+        }
+
+        .buttons {
+            display: flex;
+            flex-direction: column;
+            width: 100px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            background: yellow;
+        }
+
+        .flex {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+        }
+
+        * {
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+    </style>
+
+    
+    <div
+        id="app"
+        @keydown.ctrl.s.prevent="saveToday"
+        @keydown.ctrl.l.prevent="loadToday"
+        @keydown.ctrl.h.prevent="actionHandler('submithtml')"
+        @keydown.ctrl.a.prevent="clearCodeMirror"
+        @keydown.alt.a.prevent="clearCodeMirror(false)"
+        @keyup.ctrl.shift.n.prevent="updateNotes"
+        @keydown.F1.prevent="actionHandler('db')"
+        @keydown.F2.prevent="actionHandler('cursorforward')"
+        @keydown.F7.prevent="GETITEMS"
+        @keydown.F5="saveOnExit"
+        @keydown.F4="saveOnExit"
+        @keydown.F8.prevent="checkprettier"
+        @keydown.F9.prevent="actionHandler"
+        @keydown.backslash.prevent="actionHandler"
+        @keydown.tilda.prevent="previewHandler"
+        @keydown.F10.prevent="actionHandler('runpy')"
+        @keydown.ctrl.r="resetcursor"
+        @keydown.ctrl.q.prevent="actionHandler('cleartemp')"
+        @keyup.ctrl.m="actionHandler('eval')"
+        @keydown.alt.enter.prevent="actionHandler('js')"
+        @keydown.alt.w.prevent="createSnippet"
+        @keydown.alt.e.prevent="useSnippet"
+        @keydown.alt.r.prevent="clearSnippet"
+        @keydown.alt.l.prevent="tolib"
+        @keydown.ctrl.e.prevent="evallib"
+        @keydown.alt.e.prevent="selectiveEVAL"
+        @keyup.ctrl.enter.prevent="vueCreateVuePage"
+        @keyup.shift.enter.prevent="FIXCODE"
+        @keyup.ctrl.b="actionHandler('db')"
+        @keyup.alt.b.prevent="debugSection"
+        @keyup.alt.a.prevent="gracc"
+
+        @keydown.ctrl.q.prevent="debugDatum"
+        @keyup.alt.enter.prevent="useLastCommand"
+    >
+        
+        <div class="" >{{modalAnswer}}</div>
+        <div v-show="modalStatus">
+            <p> hi from {{modalStatus}}</p>
+            <input ref="modal" @keyup.enter="modalAction" v-model="modalAnswer"/>
+        </div>
+
+        <div class="grid">
+            <textarea ref="textarea"></textarea>
+            <div v-show="currentBuffer == 'cwf'" class="testframe">
+                <codeframe :iframe-width="iframeWidth" :html-text="htmlText" :css-text="cssText" js-text="jsText"/>
+            </div>
+        </div>
+        <div>
+            <div class="t2andbuttons">
+                <p class="foo">hihi</p>
+                <p>-1 is dl all, 0 is preview all, 1 is preview chunk</p>
+                <p>{{pyText}} : python text value</p>
+                <p>{{version}} : version value</p>
+                <p>{{currentBuffer}} : currentBuf value</p>
+                <p>{{radio}} : radio value</p>
+                <textarea ref="foo" :style="styleObject" v-model="tempString"></textarea>
+                <div class="buttons">
+                    <button @click="enterBlock" class="">enterbl</button>
+                    <button @click="speakAxios" class="">speakax</button>
+                    <button @click="inc" class="">increment</button>
+                    <button @click="actionHandler('runpy')" class="">runpy</button>
+                    <button @click="fooBar" class="">fooBar</button>
+
+                    <button @click="downloadStorage" class="">downloadStorage</button>
+                    <button @click="speech" class="">speek</button>
+                    <button @click="debugAll" class="">debugall</button>
+                    <button @click="evallib" class="">evalib (ctrl e)</button>
+                    <button @click="tolib" class="">to lib (alt l)</button>
+                    <button @click="saveOnExit" class="">saveOnExit items</button>
+                    <button @click="clearitems" class="">clear items</button>
+                    <button @click="readitems" class="">read items</button>
+                    <button @click="checkprettier" class="">Check prettier</button>
+                    <button @click="saveNotes" class="">save notes</button>
+                    <button @click="errorAction" class="">scause error to stop</button>
+
+                    <button @click="clockOff = true" class="">clock off</button>
+                    <button @click="ja" class="">Jsonbin Action</button>
+                    <button @click="cancelSpeech" class="">Cancel Action</button>
+                    <button @click="checkselection" class="">Check selection</button>
+                    
+
+                    <textarea ref="quickNotes" :style="styleObject" v-model="quickNotes"></textarea>
+                </div>
+            </div>
+        </div>
+
+
+        <hr/>
+
+
+
+        <pre :key="textItem2">{{textItem2}}</pre>
+
+        <transition name="fade" mode="out-in">
+        <pre :key="textItem">{{textItem}}</pre>
+        </transition>
+        <ul>
+            <li 
+                @click="reader(name)"
+                v-for="name in [1,2,3]"
+            >{{name}}</li>
+        </ul>
+
+
+        <h1>libraryfunctions</h1>
+        
+        <ul v-if="libraryStatus">
+            <li v-for="(val, key, index) in libraryFunctions">
+                {{index}}. {{key}}: {{val}}
+                <button @click="getLibraryItem(key)">{{key}}</button>
+                <button @click="removeLibraryItem(key)">delete {{key}}</button>
+            </li>
+        </ul>
+        <h1>endlibrary</h1>
+        
+        <input type="range" min="100" :max="400" v-model="heightController" />
+
+        <p>height {{heightController}}</p>
+        <input type="range" min="5" :max="max" v-model="rangeValue" @input="changed" />
+        <p>width {{rangeValue}}</p>
+
+        <div class="radios">
+            <label>radios</label>
+            <li v-for="radioItem in radios"><input type="radio" v-model="radio" /> {{ radioItem }}</li>
+        </div>
+
+        <div class="input-selectexternal">
+            <label>fonts</label>
+            <select v-model="styles.fontFamily">
+                <option v-for="font in fonts" :value="font">
+                    {{ font }}
+                </option>
+            </select>
+        </div>
+
+        <h2>Selected: <strong>{{ styles.fontFamily }}</strong></h2>
+
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+
+        
+        <p>{{message}}</p>
+        <input type="text" class="" v-model="styles.color" />
+        <input type="text" class="" v-model="datum" /> datum colorinput
+        <input type="text" class="" ref="tempmodal" v-model="tempmodal" />
+        <input type="text" class="" v-model="version" />
+        <p>version</p>
+
+        <ul>
+            <li v-for="log in logs" @click="speakAction(log)">{{log}}</li>
+        </ul>
+        <p>This value will be sent to jsonbin: {{datum}}</p>
+        <p>Read from Jsonbin.io: {{retrievedObject}}</p>
+        <p>The responseText: {{responseText}}</p>
+
+        <span>editor Mode</span> <input type="text" v-model="mode" />
+        <input type="text" v-model="datum" />
+        
+    </div>
+</html>
+
+
+
+
+<script>
+
+function inferFunction(s) {
+    const dict = {
+        '^f': runjs,
+    }
+    for (let [k,v] of Object.entries( dict )) {
+        if (test(k, s, 'm')) {
+            return v
+        }
+    }
+}
+
+function previewHandler() {
+    let action 
+    let match
+    let original = this.getTextAreaValue()
+    let [text, tag] = split(original, 'last')
+    const map = {
+        le: LineEdit.format,
+        acc: Accumulator,
+        accold: Accumulate,
+        eval: evaluator,
+        runjs: runjs,
+    }
+
+    if (!map[tag]) {
+        console.log( 'tag not in map' )
+        console.warn('u probably meant to use backslash instd of tilda')
+        text = original
+        action = inferFunction(text)
+    }
+    else {
+        action = map[tag]
+    }
+    
+    if (action) {
+        log.display(action(text))
+    }
+}
+
+
+
+//end
+
+
+
+
+
+
+
+
+
+
+    const keyupmap = {
+        Comma: {
+            ctrlKey: this.speakTranscript,
+            shiftKey: this.cancelTranscript,
+            allowDefault: true,
+        },
+        Period: {
+            ctrlKey: this.speakAxios,
+            shiftKey: this.st2,
+            altKey: this.st,
+            allowDefault: true,
+        },
+        ShiftRight: this.toggleBuffer,
+        ControlRight: this.exitBlock,
+        AltRight: this.enterBlock,
+        F17: () => this.exitBlock(false),
+        F16: () => this.enterBlock(true),
+    }
+    const keydownmap = {
+        KeyC: {
+            ctrlKey: false,
+            shiftKey: () => this.speakAction('position'),
+            allowDefault: true,
+        },
+        KeyX: {
+            ctrlKey: false,
+            shiftKey: () => this.speakAction('last3'),
+            allowDefault: true,
+        },
+        KeyZ: {
+            ctrlKey: false,
+            shiftKey: () => this.speakAction('position'),
+            allowDefault: true,
+        },
+        KeyV: {
+            ctrlKey: false,
+            shiftKey: () => this.speakAction('space'),
+            allowDefault: true,
+        },
+        ArrowLeft: {
+            ctrlKey: () => this.version--,
+        },
+        ArrowRight: {
+            ctrlKey: () => this.version++,
+        },
+    }
+function removeDictionaryKey(name, key) {
+    dict = getStorage(name)
+    delete dict[key]
+    setStorage(name, dict)
+    console.log('deleted ' + key + ' from ' + name)
+}
+const DEFAULT_BUFFER = 'cwf'
+const SNIPPET_BUFFER = 'snippets'
+const SAVE_POINT = 'savepoint'
+
+const defaultCodeMirrorKeymap = {
+    Backspace: function(cm) {
+        let deleteSpaces = cmEmpty(cm) ? -4 : -1
+        let lc = 0
+        let pl = 0
+        if (cm.getCursor.ch == 1) {
+            deleteSpaces = 0
+            pl = -1
+        }
+        cm.replaceRange('', ...cmRangeHelper2(cm, 0, deleteSpaces, 0, pl))
+    },
+    ';': function (cm) {
+        cm.replaceSelection(':')
+    },
+}
+
+function createKeyMap2(map) {
+    return Object.entries(map).reduce((acc, [k, v]) => {
+        const key = capitalize(k)
+        const fallback = v.fallback || k
+        const replaceRange = v.replaceRange
+        function parser(cm) {
+            const word = cm.findWordAt(cm.getCursor())
+            const range = cm.getRange(word.anchor, word.head)
+            // console.log( lastWord, range)
+            const line = cm.getLine(cm.getCursor().line)
+            const lastWord = search('[a-zA-Z]+$', line)
+            if (lastWord == v.target.slice(0, -1)) {
+                console.log( 'uippp')
+                v.action()
+            }
+        }
+        acc[key] = parser
+        return acc
+
+    }, {})
+}
+const codeMirrorOptions = {
+    styleActiveLine: true,
+    indentUnit: 4,
+    tabSize: 4,
+    lineWrapping: true,
+    lineNumbers: true,
+    line: true,
+    theme: 'default',
+    mode: null,
+    autofocus: true,
+    extraKeys: { 
+    }
+}
+
+const main = {
+    /* fmain */
+    data() {
+        return {
+
+
+         tempdict: {
+            'sayhi': () => console.log('heello'),
+            'gtstart': () => this.goToLine('start'),
+            'gtend': () => this.goToLine('end'),
+            'gtmiddle': () => this.goToLine('middle'),
+            'rjson': () => this.requestJB('read'),
+            'wjson': () => this.requestJB(getStorage('pmap')),
+        },
+             clickmap: {
+               true: {
+                 [DEFAULT_BUFFER]: this.autoClick,
+                 [SNIPPET_BUFFER]: this.snippetClick,
+               },
+               false: {
+                 [DEFAULT_BUFFER]: this.autoClick,
+               },
+            },
+            /* fdata */
+            tempbuffer: '',
+            fixed: false,
+            handleActionDelimiter,
+            getActionKey,
+            actionKey: null,
+            foo: 'foobalicious',
+            testcount: 0,
+            timerID: null,
+            modalAnswer: null,
+            modalResponse: null,
+            modalStatus: null,
+            isActiveClock: false,
+            textItem2: 'awaiting',
+            sameKeyCount: 0,
+            previousKey: null,
+            tempAsset: '',
+            iframeWidth: 100,
+            lang: 'js',
+            cmkeys: createKeyMap(cmskeys),
+            // keyupmap,
+            // keydownmap,
+            //datalog,
+            previousCommand: () => console.log('awaiting command'),
+            names: names,
+            mode: 'testmode',
+            toggleIndex: 0,
+            htmlText: '',
+            cssText: '',
+            jsText: '',
+            // readerItems: vuegithub,
+            textItem: 'awaiting',
+
+            pyText: 'initial pytext',
+            debugcount: 0,
+            count: 0,
+            errorCount: 0,
+
+            keyPress: 'q',
+            keycode: 'KeyW',
+
+            map: packmap,
+            radio: '',
+            radios: ['read', 'write', 'update'],
+            bufferMemory: {},
+            buffers: {},
+            isDownload: false,
+            storageAction: updateStorage,
+            tempString: '',
+            templib: '',
+            styles: {
+                color: 'blue',
+                fontFamily: 'Noto Sans',
+                fontSize: 16,
+                width: '60%',
+                height: '120px',
+            },
+            testobj: {
+                color: 'red',
+                fontSize: '13px',
+            },
+            fonts: ['Verdana', 'Lucida Grande', 'menlo', 'consolas', 'asdf', 'Courier', 'Noto Sans', 'Inconsolata'],
+            max: 10,
+            rangeValue: 10,
+            heightController: 100,
+            bufferList: [DEFAULT_BUFFER, SNIPPET_BUFFER],
+            
+            libraryFunctions: [],
+            pylib: '',
+            quickNotes: '',
+            globalCount: 0,
+            foo: 'foo',
+            clockOff: false,
+            lib: '',
+            currentBuffer: DEFAULT_BUFFER,
+            name: '',
+            start: true,
+            tempmodal: '',
+            keyTracker: {},
+            version: 0,
+            logs: ['first'],
+            exitblockcount: 0,
+            arrow: '',
+            tracker: { '': 'function' },
+            x: 0,
+            responseText: 'none so far',
+            speechMap: speechMap,
+            count: 0,
+            
+            storageName: 'count',
+            message: 'Hello from Parent!',
+            placeholder: 0,
+            codeMirrorOptions: codeMirrorOptions,
+            retrievedObject: '',
+            datum: 'datum val',
+        }
+    },
+
+    methods: {
+        cwfClick,
+        initEventListeners,
+        snippetClick,
+        incrementIframeWidth,
+        vuesayhi,
+        loadTempAsset,
+        vueCreatePage,
+        vueCreateHtmlPage,
+        vueCreateVuePage,
+        vueCheckCode,
+        downloadHtmlObject,
+        findAndCopyAccumulateItem,
+        useLastCommand,
+        copyToOtherBuffer,
+        getTextAreaValue,
+        goToLine,
+        clearCodeMirror,
+        testAction,
+        requestJB,
+        sayvue,
+        toggle, toggleMap,
+        inc() {
+            this.textItem = this.testitems.increment()
+        },
+
+        displayer,
+        deliveryHandler,
+        reader,
+        saveToday,
+        loadToday,
+        runpy,
+        displayPython,
+        cancelTranscript,
+        
+        toggleBuffer,
+
+        st,
+        st2,
+        ipsum,
+
+        sprawlRange,
+        speakAxios,
+        speakContents,
+        speakTranscript,
+        refresh,
+        addTodo,
+        startParse,
+        boofoo,
+
+        sayhi,
+        setfoo,
+        fooBar,
+
+        audioSTART,
+        audioEND,
+        speech,
+
+        setBuffer,
+        openBuffer,
+        setAction,
+        setCursorToEnd,
+
+        downloadStorage,
+
+        checkselection,
+        awaiter,
+        delay,
+        clockAction,
+        errorAction,
+        clock,
+        timerAction,
+        saybye,
+        sayhelloComplex,
+        getLibraryItem,
+        removeLibraryItem,
+        clearCodeMirror,
+        copyClipboard,
+        changed,
+        getCWF,
+        evallib,
+        tolib,
+        readitems,
+        clearitems,
+        setLine,
+        deleteLine,
+        stdout,
+        currentWork,
+
+        rs,
+        initializeCodeMirror,
+        saveNotes,
+        exitBlock,
+        enterBlock,
+        setCursor,
+        backspace,
+        add,
+        cancelSpeech,
+        sv,
+        
+        /* fmethods */
+        magical,
+        autoClick,
+        deleteRange,
+        getRangeSprawl,
+        previewHandler,
+        cmTextEdit,
+        runOnStart,
+        gvfn,
+        usePreviousCommand,
+        modalAction,
+        validateAction,
+        resetTimer,
+        determineKeyPressControlFlow,
+        determineClickControlFlow,
+        clearSnippet,
+        createSnippet,
+        useSnippet,
+        toggleComment,
+        debugAll,
+        accumulateChunk,
+        debugSection,
+        debugAction,
+        gracc,
+        lineSprawl,
+        textSprawl,
+        debugDatum,
+        gr,
+        debugcode,
+        FIXCODE,
+        ja,
+        setDatum,
+        actionHandler,
+        delayer,
+
+        runlogs,
+        setget,
+        evalcode,
+        evaluate,
+        fastCheck,
+        checkprettier,
+        clear,
+        announce,
+        speakAction,
+        resetcursor,
+        sixblock,
+        rr,
+        ch,
+        ln,
+        addText,
+        replaceLine2,
+        replaceLine,
+
+        getText,
+        gv,
+        getCursor,
+
+        parsenew,
+        um,
+
+        responder,
+        GETITEMS,
+
+        vdownload,
+        downloadAction,
+        getLine,
+
+        rangeObject,
+        saveBuffer,
+        saveOnExit,
+        vuePageMaker,
+    },
+    computed: {
+        readerItemNames() {
+            return Object.keys(this.readerItems)
+        },
+        computedVersion() {
+            if (this.version == -1) return ''
+            return this.version == 0 ? 'latest' : this.version
+        },
+        computedPhrase() {
+            let product = 'the boy walked down the street. he said hi to john.'
+            return product.split(/(?<=\. )/)
+        },
+        libraryStatus() {
+            return exists(this.libraryFunctions)
+        },
+        computedLibrary() {
+            
+        },
+        computedString() {
+            return 'let s = `' + this.tempString + '`'
+        },
+        ctestobj() {
+            let obj = this.testobj
+            obj.color = this.styles.color
+            return obj
+        },
+
+        styleObject() {
+            const obj = {
+                color: this.styles.color,
+                fontSize: this.styles.fontSize,
+                width: this.rangeValue * 10 + '%',
+                fontFamily: this.styles.fontFamily,
+                height: this.heightController,
+            }
+            return obj
+        },
+        computedDatumToObject() {
+            return { value: 'bxcvbsdf' }
+        },
+    },
+    watch: {
+        currentBuffer(current, previous) {
+            console.log( current )
+            if (current == 'snippets') {
+                console.log( 'no codemirror for snippets' )
+                // this.codemirror.setSize(null, '100%')
+            }
+
+            else {
+                console.log( 'to 300' )
+                this.codemirror.setSize(null, 300)
+            }
+        },
+        modalStatus(current, previous) {
+            this.testcount++
+            if (this.testcount > 40) throw 'e' 
+            console.log( 'current:', current, 'previous:', previous)
+            console.log( 'this message was generated from modalstatus')
+            if (current == null & previous != null) {
+                console.log( 'END MODALSTATUS. focusing to codemirror, and setting modalAnswer to null.')
+                this.modalAnswer == null
+                this.codemirror.focus()
+            }
+            else if (current && previous == null) {
+                setTimeout(() => {
+                    this.$refs.modal.focus()
+                }, 0)
+            }
+        },
+
+        timerID(val) {
+           console.log( 'hello from timerid at watch', val) 
+        },
+
+        activeModal(val) {
+            console.log( 'the modal is active')
+            console.log(val)
+            if (val == 'codemirror') {
+                this.$refs.codemirrorModal.focus()
+                this.activeModal = ''
+            }
+        },
+        version(val) {
+            const messages = ['all-text', 'sprawl']
+            const message = messages[val] || 'text'
+            speak(message)
+        },
+        datum() {
+            
+            console.log(this.codemirror.somethingSelected())
+            console.log(this.codemirror.getSelection())
+        },
+    },
+    created() {
+        this.testitems = new Indexed([1,2,3,4,5])
+        this.speaker = new SpeechController(this.displayer)
+    },
+    mounted() {
+        window.speechSynthesis.cancel()
+        this.indexed = new Indexed(vueActionModes)
+        // this.performer = new Performance()
+        // this.loadTempAsset()
+        // this.testAction()
+        // this.firstLoadAction()
+        // this.keyStore = new Tracked('F7')
+        this.deliveryHandler()
+        this.indexedBufferList = new Indexed(this.bufferList)
+        this.initializeCodeMirror()
+        this.initEventListeners()
+
+        /* fmounted */
+        // this.runOnStart() // for testing
+        // this.validateAction(this.vuesayhi)
+    },
+}
+
+
+
+Vue.component('staggered', {
+template: `<div id="staggered-list-demo">
+  <input v-model="query">
+  <transition-group
+    name="staggered-fade"
+    tag="ul"
+    v-bind:css="false"
+    v-on:before-enter="beforeEnter"
+    v-on:enter="enter"
+    v-on:leave="leave"
+  >
+    <li
+      v-for="(item, index) in computedList"
+      :key="item"
+      :data-index="index"
+    >{{ item }}</li>
+  </transition-group>
+</div>`,
+
+  props: ['list'],
+  data() {
+      return {
+        query: '',
+      }
+  },
+  computed: {
+    computedList: function () {
+      const product = this.list.filter((item) => {
+        return this.query.length > 0 && test(this.query, item, 'i')
+      })
+      return product
+    }
+  },
+  methods: {
+    beforeEnter: function (el) {
+      el.style.opacity = 0
+      el.style.height = 0
+    },
+    enter: function (el, done) {
+      var delay = el.dataset.index * 150
+      setTimeout(function () {
+        ph(
+          el,
+          { opacity: 1, height: '1.6em' },
+          { complete: done }
+        )
+      }, delay)
+    },
+    leave: function (el, done) {
+      var delay = el.dataset.index * 150
+      setTimeout(function () {
+        Velocity(
+          el,
+          { opacity: 0, height: 0 },
+          { complete: done }
+        )
+      }, delay)
+    }
+  }
+})
+Vue.component('codeframe', {
+    // props: ['htmlText', 'cssText', 'jsText', 'iframeWidth'],
+    template: '<iframe class="codeframe" :style="{width: iframeWidth + iframeWidthUnit}"></iframe>',
+    props: {
+        'htmlText': {
+            type: String,
+            default: hibye,
+        },
+        'cssText': {
+            type: String,
+            default: '',
+        },
+        'jsText': String,
+        'iframeWidthUnit': {
+            type: String,
+            default: '%'
+        },
+        'iframeWidth': {
+            type: Number,
+            default: 50,
+        }, 
+    },
+    watch: {
+        cssText(val) {
+            this.writestuff()
+        },
+
+        htmlText: {
+            immediate: true,
+            handler: 'writestuff',
+                // this.writestuff()
+            // }
+        }
+    },
+    mounted() {
+        this.$el.contentDocument.body.addEventListener('click', (e) => {
+            this.incrementIframeWidth(e)
+            console.log( 'goodbye', this.iframeWidth)
+        })
+
+        // this.$el.contentWindow.addEventListener('error', (e) => {
+        this.$el.contentWindow.onerror = function(e) {
+            console.log( e )
+            console.log( 'asdfasdfasdfadsf' )
+            return false;
+        }
+    },
+
+    data() {
+        return {
+            status: true,
+            scriptString,
+        }
+    },
+    methods: { 
+        print() {
+            console.log( 'hi')
+        },
+        incrementIframeWidth,
+        writestuff() { 
+
+            console.log( this.scriptString )
+            console.log( hljsString )
+            if (!this.htmlText) {
+                console.log( 'no html text early return')
+                return
+            }
+            this.$el.contentWindow.document.open()
+
+            this.$el.contentWindow.addEventListener('error', (e) => {
+                console.log( 'boopstart' )
+                console.log( e )
+                console.log( e.stack )
+                console.log( e.lineNumber )
+                console.log( 'boop' )
+                this.status = false
+            })
+
+            this.$el.contentWindow.addEventListener('load', (e) => {
+                if (this.status) {
+                    console.green('iframe has been loaded successfully' )
+                }
+                else {
+                    console.log( 'error during load' )
+                }
+            })
+
+            let cssText = ''
+            if (this.cssText) {
+                cssText = divify('style', this.cssText)
+            }
+            let product = hljsString + snsn + cssText + snsn + this.htmlText
+            console.log( product )
+
+            this.$el.contentWindow.document.writeln(product)
+            this.$el.contentWindow.document.close()
+        }
+    },
+    computed: {
+        computedText() { 
+            if (this.htmlText && this.cssText && this.jsText) {
+            return this.htmlText + divify(this.cssText, 'style') + divify(this.jsText, 'script')
+            }
+            else {
+                return this.htmlText
+            }
+            }
+
+    }
+})
+Vue.config.keyCodes = {
+    tilda: 192,
+    backslash: 220,
+}
+
+const vm = new Vue(main).$mount('#app')
+
+window.onerror = function(message, source, lineno, colno, error) {
+    console.log( [message, source, lineno, colno, error])
+};
+</script>
+
+
+    <!-- <script src="https://unpkg.com/prettier@1.13.0/standalone.js"></script>-->
+    <!-- <script src="https://unpkg.com/prettier@1.13.0/parser-babylon.js"></script>-->
+    <!-- <script src="./skulptmin.js"></script>-->
+    <!-- <script src="./skulptlib.js"></script>-->

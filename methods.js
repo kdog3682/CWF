@@ -1136,13 +1136,6 @@ function cmRangeHelper3(cm, a,b,c,d) {
     ]
     return product
 }
-function cmRangeHelper5(cm, a = 0, b = 0, c = 0, d = 0) {
-    const {line, ch} = cm.getCursor()
-    return [
-        {line: line + a, ch: b},
-        {line: line + c, ch: d}
-    ]
-}
 function cmRangeHelper4(cm, a = 0, b = 0, c = 0, d = 0) {
     const {line, ch} = cm.getCursor()
 
@@ -1617,7 +1610,8 @@ function deliveryHandler() {
      this.actionmap = {
         cwb: () => {
             readClipboard().then(url => {
-                copyWebsitePage(url).then(result => {
+                TextController.pick(url).then(result => {
+                // copyWebsitePage(url).then(result => {
                     this.displayer(result, 'textarea')
                 })
             })
@@ -2530,3 +2524,4 @@ function vueTimer({
 // reactive data goes into data. other things don't.
 // asdfasdfjasdlflasd 
 
+// so much happens within the cm instance.

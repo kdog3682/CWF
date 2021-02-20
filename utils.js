@@ -1,4 +1,45 @@
 
+        const JSONBIN_VERSION_ID = '5e9cf5c82940c704e1db3606'
+        const JSONBIN_NO_VERSION_ID = '5f30ae36dddf413f95c101d3'
+
+    const JSONBIN_SECRET_KEY = '$2b$10$RpyRq6D2g4SIaVl.vix5W.vq33VVnyQgzeCev0fLf2pJo2LUVf8DC'
+const snippetDelimiter = 'X'
+const globalTabWidth = 4
+const humzlemap = {
+    'january': 0,
+    'february': 1,
+    'march': 2,
+    'april': 3,
+    'may': 4,
+    'june': 5,
+    'july': 6,
+    'august': 7,
+    'september': 8,
+    'october': 9,
+    'november': 10,
+    'december': 11,
+    'sunday': 0,
+    'monday': 1,
+    'tuesday': 2,
+    'wednesday': 3,
+    'thursday': 4,
+    'friday': 5,
+    'saturday': 6,
+    '1': 'one',
+    '2': 'two',
+    '3': 'three',
+    '4': 'four',
+    '5': 'five',
+    '6': 'six',
+    '7': 'seven',
+    '8': 'eight',
+    '9': 'nine',
+    '10': 'ten',
+    '11': 'eleven',
+    '12': 'twelve',
+    '13': 'thirteen',
+} 
+
 let scriptString = `<script src="./utils.js"></script>`
 const hljsString = '<link rel="stylesheet" href="https://unpkg.com/@highlightjs/cdn-assets@10.5.0/styles/default.min.css">\n<script src="https://unpkg.com/@highlightjs/cdn-assets@10.5.0/highlight.min.js"></script>\n<script>hljs.initHighlightingOnLoad();</script>'
 const vuejs = '<script src="./vue.js"></script>'
@@ -616,6 +657,7 @@ if (isNode()) {
         old(...args)
      }
 
+     console.string = (s) => old(stringify(s))
      console.red = (...args) => {
         old(__line, red, b, args.join('\n\n------------------\n\n'), c)
      }
@@ -647,6 +689,8 @@ else {
  
     console.green =   (x) => console.log('%c' + x, 'color: green; font-size: 16px;')
     console.blue =  (x) =>   console.log('%c' + x, 'color: blue; font-size: 16px;')
+
+    console.string = (s) => old(stringify(s))
     console.red =  (...args) =>  {
         let x = args.join('\n------\n')
         console.log('%c' + x, 'color: red; font-size: 16px;')
@@ -1249,9 +1293,13 @@ function getDateInfo() {
         month: date.getMonth() + 1,
     }
 }
+function getCurrentMonth() {
+    return new Date().getMonth()
+}
+
 function getCurrentYear(mode = '') {
     const product = new Date().getFullYear()
-    return mode == 'string' || mode == String ? String(product) : product
+    return (mode == 'string' || mode == String) ? String(product) : product
 }
 function getHoursAndAmpm(date) {
     hours = date.getHours()
@@ -1271,6 +1319,7 @@ function getHoursAndAmpm(date) {
 const padder = (s) => String(s).padStart(2, '0')
 
 const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 function getParserHandler(x) {
     let parserHandler
     if (isString(x)) {
@@ -2252,13 +2301,23 @@ const grammarObject = {
 const simpleAttrRE = '(\\S+) ?= ?(\\S+)'
 const startingAttrRE = '^(\\S+)=(\\S+)'
 const advancedAttrRE = '(\\S+)=(.*?)(?=  |$)'
+function visible2(s) {
+    return s.replace(/\s/g, (x) => {
+        switch(x) {
+            case ' ':  return '*'
+            case '\n': return '\\n'
+            case '\t': return '\\t'
+        }
+    })
+}
+
 function visible(s) {
     let product
     if (isArray(s)) {
         product = s.join(lbr('break'))
     } else {
         try {
-            s = s.trim()
+            // s = s.trim()
             if (test('\\\\n', s)) return s.replace(/\\n/g, '\n')
             product = s.replace(/\n/g, '\\n')
         } catch {
@@ -4242,6 +4301,118 @@ const nestedFractionRE = '\\d+//'
 const pmwhNumberRE =
     '^(o|z|fw|br|bw|lh|gg(?:x|y)?|top|left|right|bot(?:tom)?|fs|wh|(?:min|max)?(?:w|h)|(?:p|m)(?:x|y|t|l|r|b)?)(calc.+|-?[\\d-.]+)(p|vh|r?em|px|vw)?'
 
+// everything should go thru runCss.
+function cssRunner(item, comments = true) {
+    let css = []
+    let store = []
+    let match, result, a, b, getDimension, unit
+
+    if (match = search(colorsRE, item)) {
+        a = cmap[match[0]]
+        b = tailwind[fixColorName(match[1])]
+        if (isTrue(comments)) b += comment(match[1], 'block')
+
+        if (a == 'border-color') {
+            css.push(['border-style', 'solid'])
+            css.push(['border-weight', '1px'])
+        }
+
+        css.push([a, b])
+    } 
+    
+    else if ((match = search(borderBottomRE, item))) {
+
+        let [position, weight, unit, style, color] = argfix(
+            match,
+            [
+                [true, true, '1px', 'solid', true],
+                [true, true, true, 'solid', true],
+            ],
+            [(position) => cmap[position], '', '', '', (color) => tailwind[color]]
+        )
+    } else if ((match = search(namedColorsRE, item))) {
+        // console.red( match )
+        b = tailwind[match] 
+        if (isTrue(comments)) b += comment(match, 'block')
+        css.push(['color', b])
+    }
+
+    if (false) {
+    } else if ((match = search(lgRE + '', item))) {
+        a = match[0]
+        b = match[1]
+        console.log(a, b, '--')
+        if (a == 'lg') {
+            result =
+                cmap[a] +
+                parens(
+                    b
+                        .split('-')
+                        .map((x) => tailwind[x])
+                        .join(', ')
+                )
+            css.push(['background', result])
+        }
+
+        if (a == 'gtc' || a == 'gtr') {
+            console.log('asdfsdf')
+            if (isNumber(b)) {
+                b = 'repeat(' + b + ', 1fr)'
+            } else if (b == '') {
+                b = 'boooooga'
+            } else {
+                b = dashToSpace(b)
+            }
+
+            css.push([cmap[a], b])
+        } else if (a == 'gr' || a == 'gc') {
+            css.push([cmap[a], b])
+        }
+    } else if ((match = search(pmwhNumberRE, item))) {
+        a = match[0]
+        b = match[1]
+        // console.red( a,b, match[2] )
+        unit = switcher(match[2], { vw: '', vh: '', lh: '', fw: '', p: '%', default: 'px' })
+        // console.red( unit )
+
+        if (b.startsWith('calc')) {
+        } else {
+            b += unit
+        }
+
+        if ((getDimension = search('(?<!gg)(?:x|y)$', a))) {
+            a = cmap[a.slice(0, -1)]
+            for (let dimension of dmap[getDimension]) {
+                css.push([a + '-' + dimension, b])
+            }
+        } else if (['top', 'left', 'bottom', 'right'].includes(a)) {
+            css.push([a, b])
+        } else {
+            a = cmap[a]
+            if (isArray(a)) {
+                a.forEach((el) => css.push([el, b]))
+            } else {
+                css.push([a, b])
+            }
+        }
+    } else if (cabmap[item]) {
+        if (isArray(cabmap[item]) && isString(cabmap[item][0])) {
+            css.push(cabmap[item])
+        } else if (isArray(cabmap[item])) {
+            cabmap[item].forEach((el) => css.push(el))
+        } else if (isString(cabmap[item])) {
+            css.push([cabmap[item], item])
+        } else if (isObject(cabmap[item])) {
+            css.push(cabmap[item].a, cabmap[item].b)
+        }
+    } else if (test('(?:px|asd|%|\\d)$', item)) {
+        let [a, b] = split(item, 'css')
+        css.push([a, b])
+    }
+    if (exists(css)) return css
+    return null
+}
+
 function runCss(item, comments = true) {
     let css = []
     let store = []
@@ -4250,7 +4421,7 @@ function runCss(item, comments = true) {
     if ((match = search(colorsRE, item))) {
         a = cmap[match[0]]
         b = tailwind[fixColorName(match[1])]
-        if (comments) b += comment(match[1], 'block')
+        if (isTrue(comments)) b += comment(match[1], 'block')
 
         if (a == 'border-color') {
             css.push(['border-style', 'solid'])
@@ -4271,7 +4442,7 @@ function runCss(item, comments = true) {
     } else if ((match = search(namedColorsRE, item))) {
         // console.red( match )
         b = tailwind[match] 
-        if (comments) b += comment(match, 'block')
+        if (isTrue(comments)) b += comment(match, 'block')
         css.push(['color', b])
     }
 
@@ -5385,7 +5556,7 @@ function StorageArrayToFlatArray(dict) {
 
 function getHtmlcss(s) {
     regex = '([^]+?)\\s+?\\n@([^]*)'
-    return mapped(search(regex, s), parseHtml, parseCss)
+    return mapped2(search(regex, s), parseHtml, parseCss) //C
 }
 
 function colorParser(re, s, parser) {
@@ -5562,6 +5733,10 @@ centered
 
 
 const cabmap = {
+    times:['font-family', 'Times'],
+    georgia:['font-family', 'Georgia'],
+    times:['font-family', 'Tim,'],
+    times:['font-family', 'Times'],
     circle: (x) => {
         const product = [
             ['width', x],
@@ -6270,8 +6445,9 @@ function stringReduction(
     if (reverse) attributes.reverse()
     let product = ''
     if (isNestedArray(attributes)) {
-        product = attributes.reduce((acc, [a, b]) => {
-            // console.red( a,b )
+        product = attributes.reduce((acc, item) => {
+            if (!item) return acc
+            let [a,b] = item
 
             if (isEmpty(b)) {
                 return acc
@@ -6434,7 +6610,18 @@ function createDiv(spaces, el, className = '', attrs = '', text = '', enter = nu
     return product
 }
 
-function mapped(input, mapper, join = null) {
+function mapped(fn) {
+    return (x) => {
+        if (isArray(x)) {
+            if (x.length == 0) return null
+            if (x.length == 1) return fn(x)
+            return x.map(fn)
+        }
+        return fn(x)
+    }
+}
+
+function mapped2(input, mapper, join = null) {
     if (isArray(mapper)) {
         for (let i = 0; i < input.length; i++) {
             input[i] = mapper[i](input[i])
@@ -6711,15 +6898,8 @@ function beforeUnload(x) {
     }
 }
 
-function smallify(listStore) {
-    if (!exists(listStore)) return ''
-    return listStore.length == 1 ? listStore[0] : listStore
-    try {
-        return read(file).slice(0, 1000)
-    } catch (e) {
-        console.log(e)
-        return 'error'
-    }
+function smallify(list) {
+    return list.length == 1 ? list[0] : list
 }
 
 function getDocNotes(s, key) {
@@ -7452,6 +7632,13 @@ function createStringDictionaryEntry(store, { string = true, singleLine = true, 
     return s
 }
 
+function createVariable2(val, name) {
+    if (isObject(val)) {
+        val = toStringDictionary(Object.entries(val)).trimEnd()
+    }
+    return brackify('const ' + name + ' =', val)
+}
+
 function createVariable(name, val) {
     return 'const ' + name + ' = ' + val
 }
@@ -8123,6 +8310,7 @@ function jspyifParser(_, tag, s) {
 }
 
 function sleep(ms = 3000) {
+    if (ms < 10) ms *= 1000
     return new Promise((resolve) => {
         setTimeout(() => {
             console.log('finished sleep')
@@ -8498,6 +8686,9 @@ function listParser2(s) {
     return start + listed(s, { mode: mode }) + '\n\n'
 }
 
+function sliced(s, {delimiter = null}) {
+    if (delimiter) return s.replace(RegExp('^' + '.*?' + delimiter))
+}
 function slicedArgFactory(x) {
     return (fn) => (s) => fn(s.slice(x))
 }
@@ -9855,6 +10046,34 @@ function jsonbin(value, fn = null) {
     })
 }
 
+function jsonbin2({mode = 'GET', value = null, versioning = false } = {}) {
+
+    const version = versioning ? 'latest' : ''
+    const id = versioning ? JSONBIN_VERSION_ID : JSON_NO_VERSION_ID
+    const url = pathjoin('https://api.jsonbin.io/b', id, version)
+    const request = new XMLHttpRequest()
+
+    return new Promise((resolve, reject) => {
+        request.onreadystatechange = () => {
+            if (request.readyState == XMLHttpRequest.DONE) {
+                resolve(request.responseText)
+            }
+        }
+
+        request.open(mode, url, true)
+        request.setRequestHeader('public', true)
+        request.setRequestHeader('secret-key', JSONBIN_SECRET_KEY)
+        request.setRequestHeader('Content-Type', 'application/json')
+        request.setRequestHeader('versioning', boolean(version))
+        if (mode == 'PUT' || mode == 'POST') {
+            if (content && !isPrimitive(content)) {
+                content = JSON.stringify(content)
+            }
+            request.send(content)
+        }
+    })
+}
+
 function JSONBINPromiseHandler(type, value = {}, { public = true, version = false } = {}) {
     let id
 
@@ -10213,13 +10432,15 @@ function dlineParser(s) {
     return result
 }
 
-function dobjParser(s) {
-    const parser = ([a,b]) => {
-        return parens(a, 'sq') + ': ' + dollarCapture(b) + ','
+function dobjParser(s, mode = 'DICT-LINE') {
+    console.log( visible2(s) )
+
+    const parser = ([a,b]) => parens(a, 'sq') + ': ' + dollarCapture(b) + ','
+    const items = getLineInfoMAPS(s).map(parser)
+    switch(mode) {
+        case 'DICT-OBJ': return parens(indent(items.join('\n')), 'brackify')
+        case 'DICT-LINE': return parens(items.join(' '), '{ | }')
     }
-    const items = findall('(\\S+) (\\S+)', s).map(parser)
-    const product = items.join(' ')
-    return '{ ' + product + ' }'
 }
 
 function doParser(s) {
@@ -11755,8 +11976,12 @@ function setify(arr) {
     return Array.from(new Set(arr))
 }
 
-function enumerate(el, idx) {
-    return `${idx + 1}. ${el}`
+function enumerated(el, idx = 0, offset = 1) {
+    return `${idx + offset}. ${el}`
+}
+
+function enumerate(el, idx = 0, offset = 1) {
+        return el.map((item, i) => [item, i + offset])
 }
 
 function sliceTo(s, x) {
@@ -11877,8 +12102,15 @@ function div(el, content = '', attrs = '', newlines = false, indentation = 0) {
 }
 
 function divify(el, content = '', attrs = {}) {
-    attrs = stringReduction(attrs, { mode: 'attrs' })
-    // console.log( visible(attrs) )
+    if (isArray(content)) {
+        content = toString(content)
+    }
+    if (attrs && isString(attrs)) {
+        attrs = ' class="' + attrs + '"'
+    }
+    else {
+        attrs = stringReduction(attrs, { mode: 'attrs' })
+    }
     const isClosing = isClosingTag(el)
     let s =
         '<' +
@@ -12726,10 +12958,16 @@ function smartSplit(s) {
 
 function getLineInfoMAPS(s) {
     const delimiter = search('  |, |\\t|\\n', s)
+    let regex
     if (delimiter) {
-        let regex = '(?<=' + delimiter + '|^)' + '(\\S+) (.*?)(?=' + delimiter + '|$)'
-        return findall(regex, s, 'gm')
+        regex = '(?<=' + delimiter + '|^)' + '(\\S+) (.*?)(?=' + delimiter + '|$)'
     }
+    else {
+        regex = '(\\S+) (\\S+)'
+    }
+    return findall(regex, s, {flags: 'gm'})
+
+    // return findall('(\\S+) (\\S+)', s).map(parser)
     return [search('(.*?) (.*)', s)]
 }
 
@@ -12740,7 +12978,7 @@ function htmlIndent(s, n = 0) {
 
 function indent(s, n = 4, {mode = 'null'} = {}) {
     if (n === true) n = 4
-    if (isObject(n)) {
+    if (isObject(n)) { // WHEN WILL THIS EVER CAME UP!!!
         if (n.newlines) s = parens(s, '\n')
         if (n.tabWidth) n = n.tabWidth // what
         else {
@@ -12748,12 +12986,14 @@ function indent(s, n = 4, {mode = 'null'} = {}) {
         }
     }
 
+    if (mode == 'skipFirstLine') {
+        console.red( visible(toSpaces(n) ))
+        return s.replace(/(?<=\n)/g, toSpaces(n))
+    }
+
     if (mode == 'reset') {
         const currentIndentation = getIndent(s)
-        console.log( visible(s ))
-        console.log('current',  currentIndentation )
-        console.log('indent to',  n )
-        // smth is wrong here
+        // smth wrong here ... I believe
         return replace('^    ', ' '.repeat(n), s, 'gm')
     }
 
@@ -12939,7 +13179,7 @@ function toSimpleTitle(s) {
     return capitalize(addQuestionMarkOrPeriod(spellcheck(s)))
 }
 
-function toTitle(s) {
+function toTitle(s, ending = true) {
     const product = s
         .split(' ')
         .map((x, i) => {
@@ -12948,7 +13188,7 @@ function toTitle(s) {
             return capitalize(x)
         })
         .join(' ')
-    return addQuestionMarkOrPeriod(product)
+    return ending ? addQuestionMarkOrPeriod(product) : product
 }
 
 function allCaps(s) {
@@ -13010,7 +13250,7 @@ function toStringDictionary(arr, o = {}) {
     const INDENT = o.indent || 4
     const REGEX = o.regex || null
     const product = arr.reduce((acc, [a, b]) => {
-        return (acc += ' '.repeat(INDENT) + a + ': ' + dollarCapture(b) + JOIN)
+        return (acc += ' '.repeat(INDENT) + parens(a, 'sq') + ': ' + dollarCapture(b) + JOIN)
     }, '')
     if (REGEX) {
         return regex + '\n' + product
@@ -13249,7 +13489,25 @@ function searcher99(re, s) {
     }
 }
 
-function search(re, s, n = null) {
+function search(re, s, {slice = true, flags = ''} = {}) {
+    const regex = isRegExp(re) ? re : RegExp(re, flags)
+    const match = s.match(regex)
+    if (match) {
+        const items = match.slice(0)
+        if (slice) {
+            if (items.length == 2) return items[1]
+            if (items.length == 1) return items[0]
+            return items.slice(1)
+        }
+        else {
+            return items
+        }
+    }
+    else {
+        return null
+    }
+}
+function searchOLD(re, s, n = null) {
     let item = s.match(RegExp(re))
     if (!n) {
         if (!item) return null
@@ -13306,20 +13564,27 @@ function filteredFindall(re, s, flags = 'gm') {
     return store
 }
 
-function findall(re, s, { flags = null, sliced = true } = {}) {
-    if (!flags) flags = getRegexFlag(re)
-    const regex = new RegExp(re, flags)
+function prepareRegex(re, flags) {
+    if (isRegExp(re)) {
+        return re
+    }
+    else {
+        if (!flags) flags = getRegexFlag(re)
+        return new RegExp(re, flags)
+    }
+}
+function findall(re, s, { flags = null, sliced = true, filtered = false } = {}) {
     const store = []
-    const filtered = hasSeparatedCaptureGroups(re)
-    // tl(re)
-    // tl(filtered)
-    const parenCount = countParentheses(re)
+    const regex = prepareRegex(re, flags)
+    // const filtered = hasSeparatedCaptureGroups(regex.toString())
+    const parenCount = countParentheses(regex.toString())
     s = s.trim()
     let match
 
     if (parenCount === 0) return s.match(regex)
 
     while ((match = regex.exec(s)) !== null) {
+        // console.log( match )
         if (sliced) match = match.slice(1)
         const items = filtered ? match.filter(ph) : match
         store.push(items)
@@ -13664,7 +13929,7 @@ function lisstParser(k, s) {
     const transformer =
         k == 'blist'
             ? (x) => indentation + options.bullet + capitalize(x)
-            : (x, i) => indentation + tag + ' ' + enumerate(capitalize(x), i)
+            : (x, i) => indentation + tag + ' ' + enumerated(capitalize(x), i)
     const body = items[1].split('\n').map(transformer).join('\n')
     if (title) title = toTitle(title) + '\n\n'
     return '\n' + title + body
@@ -14792,14 +15057,18 @@ function isNestedArray(v) {
 }
 
 class SimpleStorage {
-    constructor(store = null) {
-        this.store = {}
+    init(store) {
+        if (!store) return
         if (isNestedArray(store)) {
             store.forEach(([a, b]) => this.add(a, b))
         }
         else if (isObject(store)) {
             this.store = store
         }
+    }
+    constructor(store = null) {
+        this.store = {}
+        this.init(store)
     }
     add(k, v) {
         if (this.store[k]) {
@@ -14858,6 +15127,51 @@ class AdvancedStorage extends SimpleStorage {
             store.sort(options.sort)    
         }
         return store
+    }
+}
+
+class Storage2 extends SimpleStorage {
+    constructor({mode = Array} = {}) {
+        super()
+        this.mode = mode
+    }
+
+    add(k, v) {
+       switch(this.mode) {
+           case this.mode == String:
+             return this.addString(k, v)
+           case this.mode == Number:
+             return this.addNumber(k, v)
+           case this.mode == Array: 
+             return this.addList(k, v)
+       }
+    }
+
+    addNumber(k, v) {
+        this.store[k] ? this.store[k] += v : this.store[k] = v
+    }
+
+    addString(k, v) {
+        this.store[k] ? this.store[k] += snsn + v : this.store[k] = v
+    }
+
+    addArray(k, v) {
+        if (isNestedArray(v)) {
+            if (this.store[k]) {
+                v.forEach(x => this.store[k].push(x))
+            }
+            else {
+                this.store[k] = v
+            }
+        }
+        else {
+            if (this.store[k]) {
+                this.store[k].push(v)
+            }
+            else {
+                this.store[k] = [v]
+            }
+        }
     }
 }
 
@@ -14975,46 +15289,45 @@ function parens(s, type = 'parens') {
 }
 
 function split(s, cat = '\\s', delimiter = '\\s', parsers = null, starting = 1) {
-    let items, a, b
-
-    if (cat == 'dsn') return s.split(/  |\n/)
 
     if (isString(s)) s = s.trim()
 
-    if (isRegexInstance(cat)) {
-        ;[a, ...b] = s.split(cat)
-        delimiter = search(cat, s)
-        return [a, b.join(delimiter)]
+
+    if (isArray(cat)) {
+        return search('^(.*?) (.+)', s).map((x, i) => {
+            return cat[i] ? cat[i](x) : x
+        })
     }
-    if (isFunction(cat)) {
-        return cat(split(s, 'once', delimiter))
+
+    switch (cat) {
+        case 'dsn':
+            return s.split(/  |\n/)
+        case 'EQUALS':
+            return search('^(.*?= ?)(.*)', s)
+        case isFunction(cat):
+            return cat(split(s, 'once', delimiter))
+        case isNumber(cat):
+            return [s.slice(0, cat), s.slice(cat)]
+        case 'smart':
+            delimiter = search(', ?|\\n|\\t', s)
+            if (!delimiter) delimiter = ' '
+            else if (delimiter.startsWith(',')) delimiter = ', ?'
+            return s.split(RegExp(delimiter))
+        case 'last':
+            return s.split(RegExp(delimiter + '(?=\\S+$)'))
+        case 'number-letter':
+            return s.split(/(?<=[a-zA-Z])(?=\d)|(?<=\d)(?=[a-zA-Z])/)
+        case 'ds':
+            return s.split(/  |\n/)
+        case isRegexInstance(cat):
+            let [a, ...b] = s.split(cat)
+            let delimiter = search(cat, s)
+            return [a, b.join(delimiter)]
     }
+
 
     if (isArray(s)) {
         return [s[0], s.slice(1)]
-    }
-    if (isArray(cat)) {
-        return split(s, 'once', delimiter).map((x, i) => (cat[i] ? cat[i](x) : x))
-    }
-
-    if (isNumber(cat)) return [s.slice(0, cat), s.slice(cat)]
-
-    if (cat == 'smart') {
-        delimiter = search(', ?|\\n|\\t', s)
-        if (!delimiter) delimiter = ' '
-        else if (delimiter.startsWith(',')) delimiter = ', ?'
-        return s.split(RegExp(delimiter))
-    }
-
-    if (cat == 'last') {
-        return s.split(RegExp(delimiter + '(?=\\S+$)'))
-    }
-    if (cat == 'number-letter') {
-        return s.split(/(?<=[a-zA-Z])(?=\d)|(?<=\d)(?=[a-zA-Z])/)
-    }
-
-    if (cat == 'ds') {
-        return s.split(/  |\n/)
     }
 
     if (cat == 'list') {
@@ -15982,6 +16295,12 @@ const jspy = {
 
 const jspymap = {
     js: {
+        const: 'const ',
+        irm: {
+            ff: 'function',
+            boo: 'ffffffffffssss',
+        },
+        fsnippet: (name) => 'function ' + name + '(' + snippetDelimiter + ') {\n' + ' '.repeat(globalTabWidth),
         's +=': "let s = ''",
         function: 'function ',
         add: 'new Storage()',
@@ -15992,6 +16311,12 @@ const jspymap = {
         log: 'console.log',
     },
     py: {
+        const: '',
+        irm: {
+            ff: 'def',
+        },
+
+
         log: 'print',
         's +=': "s = ''",
         function: 'def ',
@@ -19993,7 +20318,7 @@ function argGetter(items, mode = '') {
 
 function toDictionary(items, {kt = null, vt = null, reverse = null} = {}) {
     return items.reduce((acc, [k, v]) => {
-        if (kt) k = kt(k)
+        if (kt) k = String(kt(k))
         if (vt) v = vt(v)
         reverse ? (acc[v] = k) : (acc[k] = v)
         return acc
@@ -22566,8 +22891,8 @@ LineEdit2.prototype.spliceLineBelow = function (content,  n) {
 }
 
 
-function toSpaces(n) {
-    return ' '.repeat(n)
+function toSpaces(n = 4) {
+    return isNumber(n) ? ' '.repeat(n) : n
 }
 
 
@@ -25146,30 +25471,25 @@ function smartSearch(re, s) {
     return match
 
 }
-function cmInfo(cm) {
+function getBlockDelimiter(mode, enter = true) {
+    if (mode == 'javascript') 
+        return enter ? '{' : '}'
+    if (mode == 'python') 
+        return enter ? ':' : ''
+}
+
+function cminfo(cm) {
     const cursor = cm.getCursor()
+    const mode = cm.getOption('mode')
     const line = cm.getLine(cursor.line)
-    if (to == 'cursor') return line.slice(0, cursor.ch)
+    const spaces = getSpaces(line)
     return {
+        mode,
         ch:         cursor.ch,
         lineNumber: cursor.line,
         line:       line,
     }
 }
-function cmTabCompletion(cm) {
-    const {line, lineNumber, ch} = cmInfo(cm)
-    let [classTag, el] = smartSearch(' *(\\.?)(\\w+)$', line)
-    // this smartsearch can be circumvented by making sure whatever is passed to it has the appropriate properties in place
-    if (classTag) {
-        classTag = el
-        el = 'div'
-    }
-    let product = divify(el, '', {class: classTag})
-    cm.replaceRange(product, ...cmRangeHelper4(0, -1 * match.length, 0, 0))
-    cm.setCursor({line: lineNumber, ch: ch - product.length})
-}
-
-// console.log( cmTabCompletion(cm()) )
 
 
 // for the most part, everything is working. 
@@ -25427,15 +25747,11 @@ methods foo90 {
 data foo boo
 
 use vue
-use bootstrap
 use codemirror
 
-.cm-container w100p flex
-.cm w70p bgblue
-.preview w50p h100p bgred
-
-p i like cheese [[yea]] 4ok
-cm-container bgred px20 if=hoo {
+data message hi
+p i like cheese 4message
+cm-container bgred px20 {
     cmtextarea
     preview if=displaypreview  do u like to eat
     p i love to eat
@@ -25444,7 +25760,6 @@ cm-container bgred px20 if=hoo {
 
 `
 
-// console.log(vuelines.format(hstr))
 // some people do not do well in relationships. it is a little bit unlucky. nothing more, nothing less. 
 const grouptogethercriterionmap = {
     'bullet': ['prose', 'bullet-header']
@@ -25471,6 +25786,26 @@ const markdownmap = {
 
 }
 //------------------------------
+const GLOBAL_ALIAS_MAP = {
+    as: 'addstyle',
+    rs: 'removestyle',
+}
+// 
+function aliaser(map, command) {
+    return map[command] ? map[command] : map[GLOBAL_ALIAS_MAP[command]]    
+}
+
+function curryMod(fn, args, {reverse = false} = {}) {
+    if (!exists(args)) {
+        return fn
+    }
+    else {
+        if (reverse) {
+            args.reverse()
+        }
+        return (x) => fn(x, ...args)
+    }
+}
 
 function criterionEffect(current, store, key = 'type') {
             const previous = store[store.length - 1]
@@ -25705,11 +26040,9 @@ class TextAnalysis {
     static prepare(s) {
         return s.trim()
     }
-    static construct(original) {
-        original = TextAnalysis.prepare(original)
-        const regexA = '(\\w+)\\.addEventListener'
-        const element = search(regexA, original)
-        const elementString = 'const ' + element + ' = document.getElementById(\' + element + \')'
+    static construct(s, element) {
+        s = TextAnalysis.prepare(s)
+        const elementString = 'const ' + element + ' = document.getElementById(\'' + element + '\')'
 
         let traits
         if (!exists(traits)) {
@@ -25723,7 +26056,7 @@ class TextAnalysis {
             return acc += element + '.style.' + k + ' = ' + quotify(v) + sn
         }, '').trim()
 
-        const javascript = elementString + snsn + styleString + snsn + original
+        const javascript = elementString + snsn + styleString + snsn + s 
         const html = divify('div', '', {id: element})
 
         return html + snsn + divify('script', javascript)
@@ -25747,10 +26080,279 @@ class TextController {
     }
 
     static pick(s) {
-        if 
+        const map = {
+            'https:': copyWebsitePage,
+            '(\\w+)\\.addEventListener': TextAnalysis.construct,
+        }
+
+        let match
+        for (let [k,v] of Object.entries( map )) {
+            if (match = searcher(k, s)) {
+                console.log( 'Calling Function: ', v )
+                const product = v(s, match)
+                return Promise.resolve(product)
+            }
+        }
+    }
+}
+
+
+const tableItemsRE = '^(.*?): ?(.*)'
+const tableItemsFlatRE = '^(.*?): ?|(.+)'
+function toTable(s) {
+s = `Price: 10 dollars per month
+Parent Registration: Call 425-381-0608
+Safety: 6 feet apart and everyone wears face masks
+Safety: Parents come to watch
+Time: Every Sunday Morning 9:30AM to Noon at Sunset Park
+Class Size: 6 to 10 students
+Begins: May 1st, 2021`
+
+    const items = findall(tableItemsRE, s)
+    const formatters = [(x) => toTitle(x, false), addQuestionMarkOrPeriod]
+    const push = (acc, x, el, tag = '') => acc.push(divify(el, x, tag))
+    
+    const creator = (acc, item) => {
+        item.forEach((x, i) => {
+            if (formatters[i]) x = formatters[i](x)
+            push(acc, x, 'span')
+        })
+        return acc
     }
 
-console.log( TextAnalysis.construct(asdf) )
+    const creatorA = (acc, x, i) => {
+        if (formatters[i]) x = formatters[i](x)
+        push(acc, x, 'span')
+        return acc
+    }
+
+    const creatorB = (acc, item) => {
+        const x = item.reduce(creatorA, [])
+        push(acc, x, 'div')
+        return acc
+    }
+    const product = items.reduce(creator, [])
+    return divify('div', product, humzlemap[items[0].length] + '-column-table')
+}
+
+function superb(s, ...args) {
+    const map = new Map()
+    const functions = []
+    let current
+
+    for (let i = 0; i < args.length; i++) {
+        let el = args[i]
+        if (isFunction(el)) {
+            current = el
+            map.set(el, [])
+        }
+        else {
+            map.get(current).push(el)
+        }
+    }
+
+    for (let [k,v] of map.entries()) {
+        functions.push(curryMod(k, v, {reverse: true}))
+    }
+
+    const runner = pipe(...functions)
+    const product = runner(s)
+    console.log( product )
+    return product
+}
+
+function superb23(s, ...args) {
+    for (let i = args.length - 1; i > 0; i--) {
+        if (isFunction(args[i])) {
+            if (exists(store)) {
+                store.reverse()
+                let holder = args[i]
+                args[i] = (x) => holder(x, ...store)
+            }
+            break
+        }
+        else {
+            store.push(args.pop())
+        }
+    }
+    // const parser = pipe(...args)
+    // const product = parser(s)
+    console.log( product )
+}
+
+// superb(asdfasdf, (s) => s.split(' '), enumerate, toDictionary, {reverse: true}, createVariable2, 'humzlemap')
+// superb(months, mapped(x => x.toLowerCase()), enumerate, null, 0, toDictionary, createVariable2, 'humzlemap')
 
 
-// insert mode should not do it. 
+// ask for something. Going towards the elites. 
+
+// everything that has an upper level combine ,eneeds to be able to be edited at the micro level. allow for a sort of seamlessness. 
+
+// it is a good idea to ekep everything as flat as possible.
+// need to establish a normal and insert mode.
+// how do u implement the mode aspect.
+
+const sindreSorhusHtmlRE = /\s?<!doctype html>|(<html\b[^>]*>|<body\b[^>]*>|<x-[^>]+>)+/i;
+// const sindreSorhusFullHtmlRE = new RegExp(htmlTags.map(tag => `<${tag}\\b[^>]*>`).join('|'), 'i');
+
+
+function getFirstDayOfMonth(day = 0, month, year = getCurrentYear()) {
+    if (isString(day)) day = humzlemap[day.toLowerCase()]
+    if (isString(month)) month = humzlemap[month.toLowerCase()]
+    const start = new Date(year, month, 1)
+    let futureDay = start.getDay()
+    let count = 1
+    while (futureDay % 7 != day) {
+        futureDay++
+        count++
+    }
+    return count
+}
+// console.log( getFirstDayOfMonth('sunday', 'june', 2018) )
+
+// console.log( toTable() )
+
+
+
+// write('vuecm.html', vuelines.format(hstr))
+// console.log(vuelines.format(hstr))
+
+// It worked. It kind of just worked. There is a large distance to traverse. 
+// The 
+// there are optimizaiotns thatcan be made ... but they have to be made smartly, as the items cohere, cloer and closer.
+
+
+// there is no reason to ... put it into an object, other than to make it look pretty. But doing it like this, carries costs. It becomes less efficient. 
+
+// console.log( cmTabCompletion(cm()) )
+
+console.log( 'D'.charCodeAt(0))
+// console.log( String.fromCharCode(96))
+// cm deletes from the wrong place.
+
+
+
+
+
+ppl = `
+
+
+Rush Hudson Limbaugh III (/ˈlɪmbɔː/ LIM-baw; January 12, 1951 – February 17, 2021) was a controversial American radio personality, conservative political commentator, author, and television show host. He was best known as the host of his radio show The Rush Limbaugh Show, which was nationally syndicated on AM and FM radio stations. His net worth was 600 million dollars.
+
+What college did Rush Limbaugh go to?
+
+Southeast Missouri State University
+Northwest Missouri State University
+Southwest Missouri State University
+Northeast Missouri State University
+
+
+
+Kristi Noem is South Dakota's governor.
+
+What college did she go to?
+
+South Dakota State University
+
+Jason Alan Kilar is an American businessperson. He became the CEO of WarnerMedia on May 1, 2020. He was previously an Amazon executive and the CEO of Hulu.
+
+What college did he go to?
+
+University of North Carolina
+Harvard University
+Brigham Young University
+Boston University
+
+Jason Alan Kilar attended the University of North Carolina for undergraduate, and Harvard University for business school.
+
+
+`
+
+
+
+
+
+
+
+
+// u can write comments in the script. u can write omments pretty much everywhere. and then all of a sudden, it becomes cold, and u dont notice. 
+// the aspect of being childish. 
+// 
+// to do it within the family. There is a price to be paid. There needs to be apassive system of structure. 
+
+// to have 2 meets before engaging.
+// 
+
+
+// the last word comes about. 
+
+        // console.red( visible(toSpaces('    ') ))
+
+// console.log( dobjParser('hi bye  a b fly sigh  ok woka' ))
+
+// console.log('bgred bgblue wh40'
+function cssParser3(s) {
+    // return s.split(' ').map(runCss)
+    return stringReduction(s.split(' ').map(runCss).flat(), {
+        delimiter: ': ',
+        join: '; ',
+    })
+}
+// console.log( cssParser3('monospace code fs16'))
+// edit the function into the dict.
+
+function isThisFunction(fn) {
+    return fn.toString().includes('this')
+}
+
+function getCssInfo(s) {
+    return split(s, [null, cssParser3])
+}
+// console.log( getCssInfo('hi bgred wh40' ))
+// console.log(createClass('hi bgred wh40'))
+// console.log( cssParser2('hi bgred') )
+
+function sliceEditFactory(fn, mode = 'EQUALS', start = '') {
+    return (...args) => {
+        const items = split(args[0], mode)
+        if (items) {
+            args[0] = items[1]
+            return start + items[0] + fn(...args)
+        }
+        else {
+            return null
+        }
+    }
+}
+
+
+ // console.log(sliceEditFactory(dobjParser, 'EQUALS')('abc = hi bye'))
+
+asdf = `
+const movementmap = {
+
+    gg:  (cm) => cmCursor(cm, 'DOCUMENT-START'),
+    G:   (cm) => cmCursor(cm, 'DOCUMENT-END'),
+    A:   {action: (cm) => cmCursor(cm, 'LINE-END'), mode: 'ENTER-INSERT-MODE'},
+    o:   {action: cmToLineBottom, mode: 'ENTER-INSERT-MODE'},
+    O:   {action: cmToLineTop, mode: 'ENTER-INSERT-MODE'},
+}
+`
+const cdf = "^(?:class|const|(?:async )?function|def) "
+function createDictionary(re, s) {
+    const name = search(cdf.slice(1) + '(\\w+)', s)
+    const matches = findall(re, s, {sliced: true, filtered: true})
+    console.log( brackify('const ' + name + ' =', stringReduction(matches, {delimiter: ': ', join: ',\n'}) ))
+}
+
+// createDictionary(/^ *(\w+): *(?:{\w+: *)?(?:(\(cm\) => .*?|\w+), *(?:$|\w+:))/gm, asdf) // this regex grabs certain things.
+
+
+
+quote = `
+
+https://twitter.com/bencichy/status/1362932982646853634?s=20
+`
+
+
+// i dont think my parents are correct in their assessment that a 'credentialed' path is the only one that works. But it worked for them, so that is what they advertise. 

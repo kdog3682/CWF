@@ -14,6 +14,8 @@ subredditmap = {
     'py': 'learnpython',
     'js': 'learnjavascript',
     'eli5': 'eli5',
+    'vim': 'vim',
+    'css': 'css',
 }
 RESET = True 
 deletefiles = 'comments.json            '
@@ -357,6 +359,14 @@ mycwf = [
     "index1.html",
     "Print.py",
     "ec.py",
+]
+
+mycwf = [
+    'utils.js', 
+    'utils.py',
+    'index.html',
+    'vuecm2.html',
+    'methods.js',
 ]
 
 abc = {  # d
@@ -1785,19 +1795,26 @@ def visible(s):
     return replace("\n", "\\\\n", s)
 
 
+def reply():
+    reddit = Reddit()
+    reddit.RESPOND()
+
 def ask(x):
     questions = []
-    text = textgetter(x).split('updel')[-1].strip()
-    regex = '\n+(?=' + Regex(subredditmap) + '\\b)'
+    items = textgetter(x).split('updel')
+    text = items[-1].strip() if items[-1].strip() else items[-2].strip()
+    regex = '\n+(?=' + Regex(subredditmap, extend = '@') + '\\b)'
     items = re.split(regex, text)
     for item in items:
-        a,b,c = search('^(\w+) (.+)\n*([\w\W]*)', item)
+        a,b,c = search('^@?(\w+) (.+)\n*([\w\W]*)', item)
         a = subredditmap.get(a, a)
         questions.append({'subreddit': a, 'title': b, 'body': c})
 
     reddit = Reddit()
-    reddit.upvote()
+    #  reddit.upvote()
+    reddit.RESPOND()
     reddit.ask(questions)
+    print(  'finished everything'  )
 
 
 def getLocalFunction(name):
@@ -2097,7 +2114,6 @@ def arrgetter(x, mode):
 
 def filtered(items, *keys):
     if type(items) != list:
-        print(  'converting items to list'  )
         items = list(items)
 
     if len(keys) > 1:
@@ -2822,7 +2838,22 @@ def hasExtension(s):
         return ""
 
 
-def getWords(s, minimumLength=3, mode="", extra = '', unique=False):
+
+wordsWithMinimumLengthRE = '[a-zA-Z]{3,}'
+wordsCamelCaseRE = '[a-z]*[A-Z][a-zA-Z]+'
+wordsRE = '[a-zA-Z]'
+
+def getWords2(s, mode = ''):
+    if mode == '':
+        return re.findall(wordsRE, s)
+
+    if mode == 'INTERESTING':
+        return setify(re.findall(wordsWithMinimumLengthRE, s))
+
+    if mode == 'MIXED':
+        return setify(re.findall(wordsWithMinimumLengthRE, s))
+
+def getWords(s, mode=None, minimumLength = 3, unique=False, extra = ''):
     store = []
     if mode == 'mixed':
         regex = '[a-z]*[A-Z][a-zA-Z]+'
@@ -2834,8 +2865,9 @@ def getWords(s, minimumLength=3, mode="", extra = '', unique=False):
         return words
 
     for word in words:
-        if minimumLength and len(word) <= minimumLength:
+        if minimumLength and len(word) < minimumLength:
             continue
+
         if unique and word in store:
             continue
         store.append(word)
@@ -4472,7 +4504,7 @@ def getFiles(
     return files
 
 
-def Regex(x, cat="", capture=False, escape=False, allow="", start="", end="", fallback=None):
+def Regex(x, cat="", capture=False, escape=False, allow="", start="", end="", fallback=None, extend=None):
 
     if isString(x) and not cat:
         return x
@@ -4517,6 +4549,9 @@ def Regex(x, cat="", capture=False, escape=False, allow="", start="", end="", fa
         x = list(x.keys())
     elif isString(x):
         x = [x]
+
+    if extend:
+        x.append(extend)
 
     if start or end:
         return start + "(?:" + "|".join(x) + ")" + end
@@ -5698,6 +5733,19 @@ class RepeatedStorage:
     def value(self):
         return self.store
 
+class NumberStorage:
+    def __init__(self):
+        self.store = {}
+
+    def get(self, k):
+        return self.store[k]
+
+    def add(self, k, v):
+        if isNumber(self.store.get(k)):
+            self.store[k] += v
+        else:
+            self.store[k] = v
+
 class SimpleStorage:
     def __init__(self, sort=False):
         self.store = {}
@@ -6144,6 +6192,8 @@ def btest(regex, s):
 
 
 def sliced(s, start = 0, end = 0):
+    if isString(start):
+        start = len(start)
     return s[start:end]
     
 def add(store, item):
@@ -6354,6 +6404,13 @@ def checkFile(file):
     if delete:
         return "DELETE"
 
+
+def isToday(date):
+    at = datetime.datetime.fromtimestamp(date)
+    now = datetime.datetime.now()
+    sameDay = at.day == now.day
+    sameMonth = at.month == now.month
+    return sameDay and sameMonth
 
 def isTodayFile(file):
     if not isFile(file):
@@ -8389,7 +8446,11 @@ class Reddit:
 
     textParseRE = 'asdfd'
 
-    def getSelfPosts(self):
+    def getTodayPosts(self):
+        parser = lambda x: isToday(x.created_utc)
+        return filtered(self.getSelfPosts(), parser)
+
+    def getSelfPosts(self, limit=10):
         return self.reddit.redditor("mementomoriok").submissions.new(limit=limit)
 
     @staticmethod
@@ -8444,24 +8505,26 @@ class Reddit:
         Reddit().traversal()
 
     def getComments(self, id):
-        submission = self.reddit.submission(id=id)
+        if isString(id):
+            submission = self.reddit.submission(id=id)
+        else:
+            submission = id
+
         return submission.comments
 
-    def getAllComments(self, id):
+    def getAllComments(self, id, ignoreLiked = False):
         comments = self.getComments(id)
         store = []
         def runner(comments):
             comments.replace_more(limit=None)
             for comment in comments:
+                if ignoreLiked and comment.likes:
+                    continue
+                comment.upvote()
                 store.append(comment)
                 runner(comment.replies)
 
         runner(comments)
-
-        for comment in store:
-            print(  comment.body  )
-            print(    )
-        
         return store
         
     def traversal(self, id = 'ksv85m'):
@@ -8484,13 +8547,7 @@ class Reddit:
                 runner(comment.replies)
                     
         runner(comments)
-        pprint(  self.store  )
-        print(    )
         pprint(store)
-
-
-
-
         
     @staticmethod
     def getStandardRedditComment(comment):
@@ -8533,6 +8590,36 @@ class Reddit:
             comment = self.reddit.comment(comment)
         message = Reddit.parseComment(comment)
         comment.reply(message)
+
+    def GET_ITEMS(self):
+        store = {}
+        posts = self.getTodayPosts()
+        for post in posts:
+            items = [(x.id, x.body) for x in self.getAllComments(post, True)]
+            store[post.title] = items
+
+        return store
+
+    def RESPOND(self):
+        store = self.GET_ITEMS()
+        replies = []
+        for title, items in store.items():
+            for id, body in items:
+                print(  title + snsn  )
+                print(  body + snlbr  )
+                reply = input()
+                if reply:
+                    reply = reply.replace('  ', '\n')
+                os.system('clear') 
+                replies.append([id, reply])
+
+        for id, reply in replies:
+            if not reply:
+                continue
+            self.reddit.comment(id).reply(reply)
+
+        print(  'Finished'  )
+
 
     def download(self):
         return x
@@ -9067,6 +9154,10 @@ class Github:
         pprint(  matches  )
         return matches[n] if n else matches
 
+    def updateRepo(self, *items):
+        self.add(*items)
+        self.commit()
+
     def backupFile(self, *files):
         for file in files:
             if isRelativePath(file):
@@ -9111,8 +9202,7 @@ class Github:
         self.commit()
 
     def add(self, *items):
-        statement = 'git add ' + joined(items)
-        print(  statement)  
+        statement = 'git add ' + (' '.join(items) if items else '.')
         self.args.append(statement)
 
     def addAndCommitItems(self, *items):
@@ -9145,6 +9235,7 @@ class Github:
             self.repo = repo
             changedir(self.dir)
         else:
+            tl('stopping here bc its hard to rad')
             match = getdirs(getRoot(), query=repo)
             if match:
                 self.setDirectoryAndRepo(match)
@@ -11572,9 +11663,32 @@ def smartScrape():
 
 #  Github().deleteFile('testfile')
 
-def cabinet(*args):
-    if not args:
-        print(  os.listdir(os.getcwd()  ))
+def cabinet(x = None, *args):
+    if not x:
+        print(os.listdir(os.getcwd()))
+
+    if x == 'drive':
+        os.chdir('/mnt/chromeos/GoogleDrive/MyDrive/')
+
+    if args:
+        store = []
+        product = None
+        for arg in args:
+            if isFunction(arg):
+                store.append([arg, []])
+            else:
+                store[len(store) - 1][1].append(arg)
+
+
+        store.reverse()
+        for fn, args in store:
+            if product:
+                args.append(product)
+            args.reverse()
+            product = fn(*args)
+        print(product)
+
+    return
     action = None
     match = search('^(view|isfile|isdir) (.*)', args[0])
     if match:
@@ -12762,7 +12876,7 @@ def getBookmarks():
     path = os.path.expanduser(path)
 
 
-asdf='''
+questionstring1='''
 ap What is the location of chrome bookmarks on a chromebook?
 I have tried these paths thus far:
     /home/YOUR USERNAME/.config/google-chrome/Default/
@@ -12824,16 +12938,6 @@ I have been looking at utility libraries, that frequently use 1 class name per 1
 
 I'm curious if there is any performance price paid, in using it like this, rather than only having 2-3 classes.
 
-vim is there a way to achieve this without a plugin?
-
-Note: I Like plugins. But everytime, I've tried to install a plugin, something bad happens, it becomes a huge headache. As a result, I have kind of foregone using plugins.
-
-The functionality I'm looking for is this:
-
-    If the line starts with // or #, pressing the trigger key should remove it.    If the line starts with <!--, the trigger key should remove it, as well as the end of the line's "-->"
-    Otherwise, if the file lang is py, the triggerkey should append # to the line.
-    If the lang is js, the triggerkey should append '//'
-    If the lang is 'html', the triggerkey should wrap with '<!-- and -->'
 
 js Beginner question - how do you know if you are using Babel?
 I have read many things about how babel needs to be compiled to something else before it can propertly be run.  As far as I can tell, when I write js, in vim, and then include the script into a html file, everything works fine. The js that I write uses arrow functions, which I believe, is something that is part of Babel. Does this mean, that my browser, (google chrome) is compiling the babel for me? Would the code run faster, if I precompiled the babel? (And lastly, how do you precompile babel?)
@@ -12846,18 +12950,8 @@ Once the user clicks the button, a method is called which performs document.crea
 
 And thus, the library has been lazy loaded?
 
-js What is something unique that you can do in javascript, that perhaps, isnt as easily done in other languages? 
 
-unique referring to types of things that can be built and/or syntax of the language. 
-
-Personally, I love arrow functions, and the way they preserve the current context. It is the one thing I wished python had. 
-
-I also like being able to mutate an array, while iterating over the array. (Again something that you can't do in Python)
-
-
-
-
-js why does this work?
+js why does this work without using async/await?
     function resolveAfter2Seconds() {
       return new Promise(resolve => {
         setTimeout(() => {
@@ -12873,18 +12967,277 @@ js why does this work?
       // expected output: "resolved"
     }
 
-    function foo() {
-      const x = asyncCall()
+    function foo() {        // <-- doesnt this need 'async' ?
+      const x = asyncCall() // <-- doesnt this need 'await' ? 
 
     }
     foo()
     // the asyncCall works normally.
 
-I was expecting there to be an error, since 'await' wasn't used in the foo function.
+I was expecting there to be an error, since 'await' wasn't used in the foo function and since foo wasnt declared with the async keyword.
 
-css When do you use css animation, js animation, or web animations api?
+css When should you use css animation, js animation, or web animations api?
+
+js how do you use promise.all such that one failed promise doesn't ruin the entire batch? 
+For instance, I use fetch to get Github info from 10 different users, except one of the users doesnt exist, and throws an error. 
+
+How ,rwoulddo you resolve this collection of promises, such that the other 9 fetches are still returned successfully?
+
+js How do multiple event listeners on the same element work? 
+
+I'm using vue and codemirror.
+
+1. codemirror has its own keyup event listeners when text is typed. 
+2. I have vue keyup listeners triggered with @keyup="myfunction"
+3. I have window.addEventListener('keyup') registered as well.
+
+In total, there are 3 different sets of listeners for 'keyup'.
+
+I'm wondering what's going on underneath the hood. Are all of them merged into a single keyup listener? 
+
+Is there a way to make it such that, once one of the listeners has been triggered into a positive response, that the others listeners dont need to respond as well?
+
+js is there a way to use jsdom to check if your current html string and associated resources would properly run in the browser?
+
+The way I currently make edits to my index.html is I will make some edits in a script.js or styles.css, and then save everything, and then refresh the browser, and see if everything works. Then rinse and repeat. 
+
+I am trying to automate this process by doing the same thing, but instead of alt-tabbing to the browser, to just run a jsdom script, which will check if anything has been broken as a result of the new edits.
+
+If noting broken, commit the edits, else throw err.
+
+updel
+
+vim is there a way to achieve this without a plugin?
+
+Note: I Like plugins. But everytime, I've tried to install a plugin, something bad happens, it becomes a huge headache. As a result, I have kind of foregone using plugins.
+
+The functionality I'm looking for is this: (basically smartComments)
+
+    If the line starts with // or #, pressing the trigger key should remove it.    If the line starts with <!--, the trigger key should remove it, as well as the end of the line's "-->"
+    Otherwise, if the file lang is py, the triggerkey should append # to the line.
+    If the lang is js, the triggerkey should append '//'
+    If the lang is 'html', the triggerkey should wrap with '<!-- and -->'
+
+vue Should you avoid nested objects in data
+I often like sequestering relevant togther.
+For instance: statuses
+
+Instead of writing, this.statusFOO, this.statusBOO, et cetera, I will have a statuses object like : this.status.FOO, this.status.BOO.
+
+Im wondering if this is a good thing to do. While yes, Vue is able to sniff the change in the object, Im wondering if Im needlessly creating more work for Vue to do, by nesting this info inside of an object, when it doesnt actually need to be nested.
 
 
+js Should this data be nested within an object and/or is it considered bad practice?
+
+I am working with the codemirror API and as I browse plugins that other people have wrote, they will compartmentalize their data as following: Instead of using codemirror.state.theData, they create a compartment of codemirror.state.plugin = {}, and then place al the data into codemirror.state.plugin.
+
+What I have been doing, is just directly placing my data into state. So if I have a foo item, i will use cm.state.foo, rather than going the additional step, to compartmentalize it into cm.state.myapp.foo.
+
+I am doing this because:
+
+- I feel like it makes the code easier for me to work with
+- I feel like it makes codemirror have to work 'less hard' since it doesnt have to read further into an object (not sure if this is true)
+
+
+js How do event listeners work when pressing modifier keys?
+
+Pressing ctrl-a, two keydown events are fired. Both events have ctrlKey as true. Only the second event has KeyA as true.
+
+In my code, I have to write a logic gate of 'if it is NOT a letter key', return, so as to stop the eventlistener from registering the initial press of 'control.'
+
+Is there a way to avoid this logic gate, by some how having the eventlistener 'know' that it shouldnt be listening to the first 'ctrl press' ?
+
+Thanks for the help.
+
+js Does anyone have an idea of how many 'actions' can happen before a user will notice lag?
+
+Im writing some functionality for keydown event listeners. 
+I am stuffing more and more logic checks into the function. if A, do B, else C, et cetera like 10 logic checks, leading to different actions.
+
+These 10 logic checks, could easily become 100 or 1000 logic checks, by adding additional items into my controller map.
+
+Does anyone have experience in this area, and have some rules of thumb, for how to make sure the UI experience is preserved?
+
+Thanks!
+
+js What types of events cant be detected?
+
+> codemirror.option.pollInterval: Indicates how quickly CodeMirror should poll its input textarea for changes (when focused). Most input is captured by events, but some things, like IME input on some browsers, don't generate events that allow CodeMirror to properly detect it. Thus, it polls. Default is 100 milliseconds. - codemirror docs
+
+I'm wondering what would be an event, that cant be detected? Most certainly keypress, and mouseclicks should be detected. Other than this, what other type of event would a user be using on a textarea?
+
+nsq Does eating ice-cream warm you up or cool you down?
+
+The cold ice cream should lower your body temperature, but will digesting the icecream as well as the carbs and sugar, cause the temperature to go back up?
+
+js Is there a way to edit the stylesheet from javascript?
+My styles.css has the following:
+
+    .foo {
+        background: red
+    }
+
+I'm wondering if there is a way to access this as a string, and then make an edit, so that the background is now blue.
+
+vue Is there a way to pass data to a <style> element?
+
+I'd like to have an element like <style>{{content}}</style> and be able to update the page's style in real time, based on the value of content.
+
+Currently however, I'm getting the error aadsfasdf.
+
+
+css Are there any advantages / disadvantages between declaring fonts in html or in css?
+
+In html, you link the fonts in the head with <link>
+In css, you link the fonts with @font-face.
+
+Im wondering if there are any adv/disadv for each scenario.
+Additionally, if  they achieve the same thing, why do these redundant possibilities exist?
+
+Thanks for the help.
+
+
+@nutrition Is there any difference between eating a sandwich in 5 minutes, vs nibbling at it over the span of 5 hours?
+
+Normally, I take a lunch break to eat lunch.
+Today, I didn't take a lunch break, and rather just ate a little bit of my sandwich here and there, every 20 to 30 minutes, like 1 bite.
+
+Is the net result the same?
+
+updel
+
+ap What are the connotations behind using the word 'remove' or the word 'delete' ?
+
+I know it's a rather trivial matter, but when naming functions that have the functionality of remove / delete, I'm not sure which verb to use. I feel like this does kind of matter, so I'm curious as to how you guys choose between the two words when naming.
+updel
+
+vue What is the reasoning for aliasing Vue.[set/delete/nextTick] to this.$[set/delete/nextTick] ?
+
+It took me a long time to realize that these things have literally the exact same functionality, and I am curious, as to what benefit it provides, having both of these naming options.
+
+Personally, I feel like it would be easier for beginners to work with, if there was only one naming convention.
+
+js Is there a way to measure how much is 'optimized' by this manuever?
+
+Original: 
+
+    // if (map[command]) {
+        // map[command].call(this, cm)
+    // }
+
+After:
+
+    if (mapA[command]) {
+        mapA[command](cm)
+    }
+
+    else if (mapB[command]) {
+        mapB[command].call(this)
+    }
+
+
+The idea is that in the original map, there are functions which either use the current this context, or the cm parameter. 
+
+If it uses this, it doesnt need cm, and if it uses cm, it doesnt need this.
+Therefore, the '.call' is only required for the functions in the map which need the this context.
+
+Thus, the 'after' version splits the map into MapA, and MapB, A containing the functions which use cm, and B containing the functions which use this.
+
+
+
+js Should flat objects be preferred over nested objects?
+
+I have an object like this:
+
+    const map = {
+        'choice': {
+            'child: {
+                grandchild: {
+                    a: 'a',
+                    b: 'b'
+                }
+            }
+        }
+        'choice2...'
+    }
+
+
+And then I access it like this:
+
+    const final = map[firstChoice][childChoice][grandChildChoice]
+
+I'm wondering if I should normalize this map into a flat map and access it like:
+
+    const final = map[firstChoice + childChoice + grandChildChoice]
+
+Would this improve the lookup time?
+
+Thanks!
+                
+
+js How does the browser/compiler react when a file is constantly being edited?
+
+- Mainfile = index.html (size 3000 lines) which references:
+- library.js (Never changes) (size = 30,000 lines)
+- script.js  (Im constantly editing it) (size = 20,000 lines)
+
+I am also changing the index.html, a few lines every time. 
+
+How hard does the browser/compiler have to work to reflect the new edits?
+Would the answer to the above question change, if the library was 300,000 lines, and the script.js was 200,000 lines?
+
+@findareddit Is there a subreddit where people post logs about trying to change certain habits?
+
+For instance, I am trying to change the habit of using the computer late in the evening. I'm hoping to find a community where other ppl are also trying to change certain habits, so that we can share/encourage.
+
+
+updel
+
+
+vue Do you consider watchers to be minor code smells for some items which should actually be in their own component?
+
+A redditor posted this before, and I kind of understand, but also at the same time, I don't understand. Really curious to hear your guys's thoughts / explanations on this.
+
+ap What is the connotation of when a '$' sign is placed infront of a variable?
+
+I know that '_' usually means private variable, not to be exposed in public API. I guess '$' means something similar, but I'm not too sure what.
+
+I've also seen, '$$1' and '$$2' used quite frequently. Is there an implicit meaning to this particular nomenclature?
+
+
+ap ELI5 - What is a simple explanation for how a recursive descent parser works?
+
+
+
+I've been reading about ways to parse strings, and came across 'recursie descent-parser.' 
+
+
+
+js How do you create or manage aliases for your dictionaries?
+
+    function aliaser(dict, key) {
+        return dict[key] ? dict[key] : dict[GLOBAL_ALIAS_MAP[key]]    
+    }
+
+Currently, I'm using the above function to manage my aliases. Basically, if a dict doesnt have a key in it, aliaser checks if the global alias map's version of the key works. And then it returns that.
+
+The alternative that I've been using to this, is to just hardcode items. For example:
+    dict = {
+        jon: Jonathan,
+        john: Jonathan,
+        jonny: Jonathan,
+    }
+
+With the aliasmap, it would be written as:
+
+    dict = {
+        john: Jonathan
+    }
+
+    aliasmap = {
+        jon: john,
+        jonny: john,
+    }
 
 '''
 #qq
@@ -12932,7 +13285,6 @@ class Partitions:
         self.register(proseCommentRE)
 
 
-#  ask(asdf)
 #  writer(request('https://jsonformatter.org/html-validator'))
 
 
@@ -12982,4 +13334,101 @@ def requester(url, *functions):
 
 
 #  cabinet()
-Github.createRepo('CWF', standard = True)
+#  Github.createRepo('CWF', standard = True)
+#  ask(questionstring1)
+#  reply()
+#  openFile('~/node_modules/codemirror-movie/dist/movie.js')
+
+
+
+def templater(template, obj):
+    delimiter = search('[$%](?=[a-zA-Z])', template)
+    regex = delimiter + '\w+'
+
+    def parser(x):
+        return obj.get(x[1:])
+        
+    return re.sub(regex, parser, template)
+    
+
+tagmap = {
+    'function': 'code'
+}
+scoremap = {
+    'i': ['self', 5],
+    'function': ['code', 5],
+}
+
+def createScoreMap(s):
+    '''code function 
+
+    '''
+# Which way do you think is the best way to tag lines?
+def getTagNOOOoo(line):
+    match = search(regex, line)
+    return tagmap.get(match)
+
+def getTag(line):
+    words = getWords2(line, 'INTERESTING')
+    for word in words:
+        if tagmap.get(word):
+            return tagmap.get(word)
+
+    return None
+
+def getTag2(line):
+    words = getWords2(line, 'INTERESTING')
+    tag = None
+    store = NumberStorage()
+    for word in words:
+        map = scoremap.get(word)
+        if map:
+            tag, score = map
+            store.add(tag, score)
+
+            if store.get(tag) > 3:
+                return tag
+
+    return None
+
+    
+knownTagsMap = {
+    'i': 'self',
+}
+def runnerP(line):
+    match = getFirstWord(line)
+    if match == '':
+        tag = null
+    if match in knownTags:
+        tag = knownTagsMap.get(match, match)
+        line = sliced(line, match)
+    else:
+        tag = getTag(line)
+
+    return tag, line
+
+
+#  cabinet('drive', read, 'corpus.json')
+
+
+
+s = 'the function makes sense'
+#  print(  getTag(s)  )
+
+
+
+
+needtocatchthis ='''
+
+fix ff
+ <></>
+ // fixing ff
+ // adding autocomment
+
+
+
+
+'''
+
+
+Github(repo='CWF').updateRepo(*mycwf)

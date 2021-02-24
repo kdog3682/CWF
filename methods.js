@@ -1,3 +1,45 @@
+    const buttonmap = {
+        'generate': {
+            'vue': vuelines.format,
+            'page': Partitions.format,
+        },
+    }
+const vueDataObject = {
+            boo: 'zoo',
+            message: 'hi',
+                insertMode: false,
+                insertString: '',
+                normalString: 'creat',
+                snippetString: '',
+                styles: {},
+                history: [],
+                computedHtml: '',
+                //fdata,
+                mountCount: 0,
+                isIframe: false,
+                buttonOptions: {
+                    'create': ['a', 'b', 'c'],
+                    'generate': ['vue', 'html', 'css', 'page']
+                },
+                displayEvalStore: false,
+                evalStore: [],
+                leaveTime: 0,
+                returnTime: 0,
+                displayString: '',
+                buttons: ['first button', 'second button'],
+                // buttons: [{name: 'hi', action: () => console.log( this.color )}, {name:'bye', action: () => console.log('sup')}],
+                styleString: 'background: yellow',
+                evalString: '',
+                loadingIndex: null,
+                redditObject: null,
+                color: 'yellow',
+                appMode: 'DEFAULT',
+                tabCount: 0,
+                isColon: false,
+                jsString: '',
+                cssString: '',
+                htmlString: '',
+}
 const actionspeechmap = {
             speak: 'saving today',
             speak: 'clearing all of localstorage',
@@ -629,7 +671,7 @@ function valgetter(map, x) {
     }
 }
 
-function gvfn(fn, ...args) {
+function gvfnOLD(fn, ...args) {
     const runner = () => fn.call(this, this.getTextAreaValue(), ...args)   
     const runnerHandler = valgetter(this.gvfnmap, last(args))
 
@@ -1592,7 +1634,6 @@ async function magical() {
     this.displayer(product)
 }
 function deliveryHandler() {
-
     this.gvfnmap = {
         'css': (s) => {
             this.cssText = s
@@ -2523,5 +2564,1499 @@ function vueTimer({
 // if it has selection, it should go to the front. 
 // reactive data goes into data. other things don't.
 // asdfasdfjasdlflasd 
-
 // so much happens within the cm instance.
+
+// NEW ADDITION ----------------------- Feb 23
+const packmap3 = {
+    'mhw': 'cheatatmathhomework',
+    'ebs': 'explainbothsides',
+    'ck': 'cooking',
+    'ap': 'askprogramming',
+    'ljs': 'learnjavascript',
+    'lp': 'learnpython',
+    'me': 'mementomoriok',
+    'nsq': 'nostupidquestions',
+    'vue': 'vuejs',
+    'py': 'learnpython',
+    'js': 'learnjavascript',
+    'eli5': 'eli5',
+    'vim': 'vim',
+    'css': 'css',
+    'f': 'foo',
+    'function': 'asdas',
+}
+
+function createElement(el, ...args) {
+    if (!exists(args)) return
+    const element = document.createElement(el)
+    switch(el) {
+        case 'style':
+        case 'script':
+            element.innerHTML = args.join(snsn) 
+            document.head.appendChild(element);
+            break
+    }
+}
+
+// createElement('style', 'body { background: blue }')
+
+
+function pickGenerator(arg) {
+    // creates items based on how they come about.
+}
+function animateElement(el, i) {
+    let name = 'fade'
+    const [keyframes, options] = parseAnimationString(animationmap[name])
+    mergeInPlace(options, {
+        delay: Number(i) * options.duration,
+        fill: 'forwards',
+    })
+    console.string( options )
+    el.animate(keyframes, options)
+}
+
+
+function gvfn(formatter, mode) {
+    let product
+
+    if (isClass(formatter)) {
+        product = (new formatter(this.codemirror.getValue())).value
+    } else if (isFunction(formatter)) {
+        product = formatter(this.codemirror.getValue())
+    }
+
+    if (!product) return
+
+    if (isObject(product)) {
+        if (product.template) this.htmlString = product.template
+        if (product.js) this.jsString = product.js
+        if (product.css) this.cssString = product.css
+        if (product.libraries) this.libraryString = product.libraries
+    }
+}
+
+function createFrame(x) {
+    this.mountCount += 1
+    console.log( 'computing html' )
+    let s = ''
+
+    if (isObject(x)) {
+        const product = html99(x)
+        console.string( product )
+        if (product) this.computedHtml = product
+        return
+    if (x.libraries)   s += x.libraryString
+    if (x.css)          s += x.cssString
+    if (x.template)    s += x.htmlString
+    if (x.js)          s += x.jsString
+    }
+
+    else {
+    if (this.libraryString) s += this.libraryString
+    if (this.cssString)     s += this.cssString
+    if (this.htmlString)    s += this.htmlString
+    if (this.jsString)      s += this.jsString
+    }
+    this.computedHtml = s
+}
+
+
+function getStyle(i) {
+    const object = {
+        color: 'red',
+        fontSize: '13px',
+        animationDelay: 50 * Number(i),
+        animationDuration: 100,
+        animation: 'opac' 
+    }
+}
+
+
+
+function loadingHandler() {
+    this.loadingIndex++
+}
+
+function load(items, mode) {
+    this.redditObject = items
+    this.loadingIndex = 0
+    this.codemirror.state.vue.mode = mode
+}
+
+async function redditHandler() {
+    const items = await jsonbin2({mode: 'GET'})
+    this.load(items, 'REDDIT')
+    replyToResponses()
+    // answer the responses
+    // submit the responses, and submit the new questions.
+    // basically, it is always batched together. I think this is correct
+}
+
+function handlePromise(promise) {
+    promise.then(x => {
+        console.log( x )
+    })
+}
+
+
+function removePrimaryListener() {
+    window.removeEventListener(foooo)
+}
+
+
+
+function cmToLineTop(cm) {
+    const {spaces, lineNumber} = cminfo(cm)
+    cm.operation(() => {
+        cm.replaceRange(spaces + sn, Pos(lineNumber, 0))
+        cmCursor(cm, (ch, line) => Pos(line - 1, 1000))
+    })
+}
+
+function cmToLineBottom(cm) {
+    const {spaces, lineNumber, line, mode} = cminfo(cm)
+    const extraSpaces = line.endsWith(getBlockDelimiter(mode, true)) ? '    ':''
+
+    cm.operation(() => {
+        cmCursor(cm, 'LINE-END')
+        cm.replaceRange('\n' + spaces + extraSpaces, Pos(lineNumber, 1000))
+    })
+}
+
+
+function inoremapHandlerOLD(cm) {
+    console.log( 'inoremap' )
+    const inoremapReplacementMap = {
+        'foo': 'asdasjdas',
+        'boo': 'zzz',
+    }
+
+    const match = inoremapReplacementMap[this.insertString.trim()]
+    if (match) {
+        console.log( 'replacing word' )
+        cmReplaceWord(cm, this.insertString, match)
+        this.insertString = ''
+        return true
+    }
+}
+
+
+function inoremapHandler(cm) {
+    console.log( 'inoremap' )
+    const inoremapReplacementMap = {
+        'foo': 'asdasjdas',
+        'boo': 'zzz',
+    }
+
+    const match = inoremapReplacementMap[cm.state.lastWord]
+    if (match) {
+        console.log( 'replacing word' )
+        cmReplaceWord(cm, cm.state.lastWord, match)
+        cm.state.lastWord = ''
+        return true
+    }
+}
+
+
+function cmRangeHelper99(cm, {mode = null, word = null}) {
+    if (isString(arguments[1])) {
+        mode = arguments[1]
+    }
+
+    const cursor = cm.getCursor(cm)
+    if (mode == 'deleteFromCursorBackwards') {
+        return [{line: cursor.line, ch: cursor.ch - word.length + 1}, cursor]
+    }
+
+    if (mode == 'deleteLineToPreviousEnd') {
+        return [
+            {line: cursor.line - 1, ch: 1000}, 
+            {line: cursor.line, ch: 1000},
+        ]
+    }
+}
+
+function cmReplaceWord(cm, word, replacement) {
+    // const range = cm.findWordAt(cm.getCursor())
+    // const word = cm.getRange(range.anchor, range.head)
+    cm.replaceRange(replacement, ...cmRangeHelper99(cm, {
+        mode: 'deleteFromCursorBackwards',
+        word: word,
+    }))
+         
+}
+
+function cmAddClass(cm, classString) {
+    CodeMirror.addClass(cm.getWrapperElement(), classString)
+}
+
+
+function cmgetter(cm, ...queries) {
+    const cursor = cm.getCursor()
+    const line = cursor.line
+    return smallify(queries.map(runner))
+
+    function runner(query) {
+    switch(query) {
+        case 'EXTRASPACES': return ' '.repeat(cm.getOption('tabSize') || 4)
+        case 'TABSIZE': return cm.getOption('tabSize') || 4
+        case 'spaces': return cm.getLine(cursor.line).match(/^ */)[0]
+        case 'indent': return cm.getLine(cursor.line).match(/^ */)[0].length
+        case 'mode':   return cm.getOption('mode') || 'javascript'
+
+        case 'SPACES': return cm.getLine(cursor.line).match(/^ */)[0]
+        case 'INDENT': return cm.getLine(cursor.line).match(/^ */)[0].length
+        case 'MODE':   return cm.getOption('mode') || 'javascript'
+        case 'UPLINE': return cm.getLine(cursor.line - 1) || ''
+        case 'LINE':   return cm.getLine(cursor.line) || ''
+        case 'LINE-TRIM':   return cm.getLine(cursor.line).trim() || ''
+        case 'BLOCK':  return cmSprawlRange(cm)
+        case 'CURSOR': return cursor
+        case 'LINE-NUMBER': return cursor.line
+        case 'CHAR-NUMBER': return cursor.ch
+        case 'LAST-WORD': return search(/\S+$/, cm.getLine(cursor.line))
+        case 'DOCUMENT':
+            return [0, 0, cm.lastLine(), 1000]
+        case 'LINE-START-TO-LINE-END': 
+            return [Pos(line, 0), Pos(line, 1000)]
+        case 'UPLINE-END-TO-LINE-END': 
+            return [Pos(line - 1, 1000), Pos(line, 1000)]
+        case 'LINE-START-TO-LINE-END': 
+            return [Pos(line, 0), Pos(line, 1000)]
+        case 'LINE-SMART-TO-END':
+            return [Pos(line, cmgetter(cm, 'INDENT')), Pos(line, 1000)]
+        case 'LINE-SMART-TO-END':
+            return [Pos(line, cmgetter(cm, 'INDENT')), Pos(line, 1000)]
+
+        case 'DELIMITERS':   
+            const mode = cm.getOption('mode') || 'javascript'
+            return mode == 'py' ? [':', ''] : [' {', '}']
+    }
+    }
+}
+
+
+function cmSnippetReplacement(cm, range, content) {
+
+    const currentIndentation = cmgetter(cm, 'indent')
+    cm.state.extraSnippetSpaces = 0
+
+    if (isObject(content)) {
+        let replacement = ''
+        if (content.snippet.includes('\n')) {
+            cm.state.extraSnippetSpaces += currentIndentation
+            replacement = indent(content.snippet, currentIndentation, {mode: 'skipFirstLine'})
+        }
+        cm.operation(() => {
+            cm.replaceRange(replacement, range.anchor, range.head)
+            cm.setCursor(
+                range.anchor.line + content.line, 
+                range.anchor.ch + content.ch
+            )
+
+        })
+
+        cm.state.tabCount = 0
+        cm.state.snippetString = ''
+        cm.state.extraSnippetSpaces = 0
+        return
+    }
+
+    let delimiterIndex = content.search(RegExp(snippetDelimiter))
+    content = content.replace(RegExp(snippetDelimiter, 'g'), '')
+
+    if (content.includes('\n')) {
+        cm.state.extraSnippetSpaces += currentIndentation
+        content = indent(content, currentIndentation, {mode: 'skipFirstLine'})
+    }
+
+    cm.operation(() => {
+        cm.replaceRange(content, range.anchor, range.head)
+        cm.setCursor(range.anchor.line, range.anchor.ch + delimiterIndex)
+    })
+}
+
+
+function createEvent({event = 'keydown', key = 'm'} = {}) {
+    var event = document.createEvent( 'KeyboardEvent' );
+    event.initKeyboardEvent(
+                 "keypress",        //  the kind of event
+                  true,             //  boolean "can it bubble?"
+                  true,             //  boolean "can it be cancelled?"
+                  null,             //  specifies the view context 
+                  false,            //  boolean "Ctrl key?"
+                  false,            //  boolean "Alt key?"
+                  false,            //  Boolean "Shift key?"
+                  false,            //  Boolean "Meta key?"
+                   40,             //  the keyCode
+                   0,               //  default
+    );
+
+    console.log( event )
+    document.dispatchEvent( event );
+}
+
+const hello = 'hello'
+
+const fooFunction = 'function foo90 {\n    ret x'
+
+function sleep(ms = 3000) {
+    if (ms < 10) ms *= 1000
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            console.log('finished sleep')
+            resolve()
+        }, ms)
+    })
+}
+
+async function cmOperationAsync2(cm, frames, offsets = null) {
+    if (!exists(frames)) return
+    if (!frames[0]) return
+    offsets = frames.map(frame => {
+        let delay
+        if (exists(frame)) {
+            delay = 3000
+        } else {
+            delay = 3000
+        }
+        return {preDelay: delay}
+    })
+    for (let i = 0; i < frames.length; i++) {
+        if (offsets[i].preDelay) {
+            console.log( 'sleeping' )
+            await sleep(offsets[i].preDelay)
+        }
+
+        console.log( ' starting' )
+        if (frames[i]) frames[i](cm)
+
+        if (i < frames.length - 1 && offsets[i].postDelay) {
+            console.log( 'offset', i )
+            await sleep(offsets[i].postDelay)
+        }
+    }
+}
+
+
+async function cmOperationAsync(cm, frames) {
+    for (let frame of frames) {
+        if (frame.before) await sleep(frame.before)
+        frame.r(cm)
+        if (frame.d) await sleep(frame.d)
+    }
+}
+
+
+function cmOperation(cm, actions) {
+    cm.operation(cm => {
+        for (let action of actions) {
+            action(cm)
+        }
+    })
+}
+
+function cmDeleteLastWord(cm) {
+    const [cursor, line] = cmgetter(cm, 'CURSOR', 'LINE')
+
+    if (cursor.ch == 0) {
+        cm.replaceRange('', ...cmRangeHelper99(cm, 'deleteLineToPreviousEnd'))
+    }
+
+    else if (line[cursor.ch - 1] == ' ' && line[cursor.ch -2] == ' ') {
+        cm.replaceRange('', Pos(cursor.line, cursor.ch - 4), cursor)
+    }
+
+    else {
+        const word = cm.findWordAt(cursor)
+
+        // if (word.anchor.ch == cursor.ch) {
+            // cm.replaceRange('', Pos(cursor.line, cursor.ch - 1), cursor)
+            // return
+        // }
+
+        const text = cm.getRange(word.anchor, word.head)
+        const replacement = text.trim() == '' ? text.slice(4) : ''
+        cm.replaceRange(replacement, word.anchor, word.head)
+    }
+}
+
+
+const spell = {
+    deleteLastWord(s) {
+        const regex = /(?: {1,4}|\w+|[^\w ]+)$/
+        return s.replace(regex, '')
+    },
+}
+
+const defaultOptions = {
+  cutoff: 50
+};
+
+//ScriptStuff
+
+
+
+function isFunction(o) {
+    return Object.prototype.toString.call(o).slice(8, -1).toLowerCase() === 'function'
+}
+
+
+function cmDeleteLine(cm) {
+    cm.replaceRange('', ...cmRangeHelper99(cm, 'deleteLineToPreviousEnd'))
+}
+ 
+
+const movementmap = {
+    gg: (cm) => cmCursor(cm, 'DOCUMENT-START'),
+    G: (cm) => cmCursor(cm, 'DOCUMENT-END'),
+    A: (cm) => cmCursor(cm, 'LINE-END'),
+    o: cmToLineBottom,
+    O: cmToLineTop,
+}
+
+
+function vuepick(item) {
+      const index = this.picks.indexOf(item)
+      index > -1 ? this.picks.splice(index,1) : this.picks.push(item)
+}
+
+
+function vueedit(record) {
+     var index = this.list.indexOf(this.cache)
+     this.list.splice(index, 1, record);
+}
+
+// the iframe perhaps should not be responsible for handling the data. 
+// give it some time to harmonize.
+
+// the electricity is much higher.
+
+
+function cmWriteFactory(s) {
+    this.insertString = s
+    // console.string( this.codemirror.getCursor() )
+    this.codemirror.replaceSelection(s)
+    // console.string(this.codemirror.getCursor())
+}
+
+function primaryFirstAction(cm, e) {
+    const keymap = this.primaryMap[e.code]
+    if (keymap) {
+        if (isFunction(keymap)) {
+            keymap.call(this, cm, e)
+        } else {
+            keymap.action.call(this, cm, e)
+
+            if (keymap.preventDefault) {
+                console.log( 'preventing defualt' )
+                e.preventDefault()
+            }
+            if (keymap.reset) {
+                this.insertString = ''
+            }
+        }
+
+        return true // means dont continue with the keytyping.
+    }
+}
+
+
+const nonLetterKeys = ['Shift', 'ArrowRight', 'ArrowLeft', 'ArrowDown', 'ArrowUp', 'Alt', 'Control', 'Meta']
+
+function primaryKeyHandler(cm, e) {
+    // console.log( cm.state.lastWord, 'lastword' )
+
+    if (this.appMode != 'DEFAULT') {
+        console.log( 'hi from appmode' )
+        return
+    }
+
+    if (this.colonKeyHandler(cm, e)) {
+        console.log( 'hii from colon' )
+        return
+    }
+
+    if (this.primaryFirstAction(cm, e)) {
+        console.log( e.key, 'hi from pri first' )
+        return
+    }
+
+    if (nonLetterKeys.includes(e.key)) {
+        console.log( 'early return at nonletterkey' )
+        return
+    }
+
+    let score = 0
+    if (e.ctrlKey) score += 1000
+    if (e.altKey)  score += 2000
+
+    if (this.insertMode && score < 1000) {
+        this.insertString += e.key
+        
+        e.key == ' ' ? 
+            cm.state.lastWord = '' : 
+            cm.state.lastWord += e.key
+
+        const irm = cm.state.irm['js']
+        // console.blue( cm.state.lastWord )
+        // console.log( irm[cm.state.lastWord] )
+        if (cm.state.lastWord.length > 1 && irm[cm.state.lastWord]) {
+            console.log( 'zzzzzzzz' )
+            cmReplaceWord(cm, cm.state.lastWord, irm[cm.state.lastWord])
+            cm.state.lastWord = ''
+            e.preventDefault()
+            return
+        }
+    } 
+
+    else if (!this.insertMode) {
+        console.log( 'normal mode' )
+
+        if (e.key in movementmap) {
+            movementmap[e.key](cm)
+            e.preventDefault()
+            this.enterInsertMode(cm)
+            return
+        }
+        else {
+            console.log( 'hii' )
+            this.normalString += e.key
+        }
+    }
+
+    if (this.isColon) {
+        return 
+    }
+
+    if (this.insertMode) score += e.key.charCodeAt(0) + 10000
+    else if (score) score += this.normalString 
+    else score = this.normalString
+
+
+    console.red( score )
+    const modmap = this.catchallmodmap[score]
+    if (modmap) {
+        if (isFunction(modmap)) {
+            modmap.call(this, cm)
+        }
+        else {
+            modmap.action.call(this, cm)
+            if (modmap.mode == 'ENTER-INSERT-MODE') {
+                this.enterInsertMode()
+
+            }
+        }
+        
+        if (isNumber(score) && !this.insertMode && score > 10) {
+            this.enterKeyHandler(cm, e)
+        }
+        this.normalString = ''
+    }
+    else {
+        console.log( 'no match from catchallmodmap. activates every time.' )
+    }
+}
+
+
+function mapflow(map) {
+    const item = aliaser(map, command)
+    if (!item) return
+    if (isFunction(item)) {
+        return {function: item}
+    }
+    if (isObject(item)) {
+
+    }
+}
+
+// it was correct to not respond with ti-logic to the words
+// in my opinion, ny is many things
+// perhaps someone needs to play the game of power so that others do not have to. 
+
+function createParameters(fn, obj) {
+    const params = getParameters(fn)
+    const store = []
+    for (let param of params) {
+        if (obj[param]) store.push(obj[param])
+    }
+    return store
+}
+
+
+function buttonHandler(key, name) {
+    try {
+        const action = buttonmap[key][name]
+        const product = html99(action(this.codemirror.getValue()))
+        this.mountCount += 1
+        this.computedHtml = product
+    } catch(e) { console.warn(e) }
+}
+
+function executeColonCommand(cm, s) {
+    console.log( s )
+    if (!s) return
+    let [command, arg] = split(s, {default: [s, null]})
+
+    console.modal('Execute Colon Command', s, command, arg)
+    let key, value, mode, promise, args
+
+    switch(command) {
+        case 'gen':
+            command = 'generate'
+        case 'generate':
+        case 'create':
+            if (!arg) arg = 'vue'
+            this.buttonHandler(command, arg)
+            break
+        case 'ge':
+            this.getElement(...arg.split(' '))
+            break
+        case "createpage":
+            this.gvfn(Partitions)
+            break
+        case "vuelines":
+            this.gvfn(vuelines)
+            break
+        /* ------------------------------------------------------ */
+        case "w":
+            cm.state.store.add(arg, cm.getValue())
+            break
+        case "e":
+            cm.setValue(cm.state.store.get(arg))
+            break
+        /* ------------------------------------------------------ */
+        case "set":
+            cm.state.store.set(arg, cm.getValue())
+            break
+        case "toframe":
+            this.htmlText = cm.getValue()
+            break
+        case "totext":
+            cm.setValue(this.htmlText)
+            break
+        case "addstyle":
+            this.$set(this.styles, ...cssParser3(arg))
+            break
+        case "removestyle":
+            this.$delete(this.styles, arg)
+            break
+        case "style":
+            cmEditStyle(cm, arg)
+            break
+        case "grab":
+            cmGrab(cm, arg)
+            break
+        case "merge":
+            ;[key, s] = split(arg)
+            const obj = window[key]
+            const data = getLineInfoMAPS(s)
+            mergeInPlace(obj, data)
+            break
+
+        case "eval":
+            switch (arg) {
+                case 'clear':
+                    this.evalStore = []
+                    break
+                case 'toggle':
+                    this.displayEvalStore = !this.displayEvalStore
+                    break
+                default:
+                   this.evalString = evaluator(bestText(arg))
+                   this.evalStore.push(this.evalString)
+            }
+            break
+
+        case "jbin":
+            ;[mode, key] = split(arg, {default: ['GET', null]})
+            console.red( mode, key, 'fromibn' )
+
+            if (mode == 'GET') {
+                value = null
+            } else if (mode = 'clipboard') {
+                readClipboard().then(x => {
+                    value = x
+                    mode = 'PUT'
+                    this.handlePromise(jsonbin2({mode, value}))
+                })
+                return
+            }
+            else {
+                value = cm.state.store.get(key) || key
+            }
+
+            promise = jsonbin2({mode: mode, value})
+            this.handlePromise(promise)
+            break
+        case "postreddit":
+            promise = jsonbin2({
+                mode: 'PUT', 
+                versioning: false,
+                value: cm.state.store.get('reddit')
+            })
+            promise.then(console.red)
+            break
+    }
+}
+
+
+function ieixecuteColonCommandOLLD(s, cm) {
+    const [command, arg] = split(s) 
+    const action = this.colonmap[aliaser(command)]
+    if (!action) return
+
+    switch(action.type) {
+        case 'NONE':
+            return action.action()
+        case 'VUE CODEMIRROR':
+            return action.action.call(this, cm, arg)
+        case 'CODEMIRROR':
+            return action.action.call(this, cm, arg)
+        default:
+            return action.action.call(this, ...split(arg, action.type))
+    }
+}
+
+
+function cmEditStyle(cm, s) {
+    const obj = {
+        'css': cssParser3(s)
+        // 'css': cssParser3(cmgetter(cm, 'NORMAL-STRING'))
+    }
+    cm.markText(...cmRangeGetter(cm, 'DOCUMENT'), obj)
+}
+
+
+
+
+function enterKeyHandler(cm, e) {
+    this.insertString = ''
+
+    if (e.key == 'Enter' && e.ctrlKey) {
+        switch(cm.state.vue.mode) {
+            case 'REDDIT':
+                cmSubmitter(cm, 'reddit-reply')
+                this.loadingIndex += 1
+                break
+            default:
+                cmSubmitter(cm)
+        }
+
+        cm.setValue('')
+        e.preventDefault()
+        return
+    }
+
+
+    if (this.insertMode) {
+        cm.state.tabCount = 0
+        cm.state.lastWord = ''
+        return
+    }
+
+    e.preventDefault()
+
+    if (this.isColon) {
+        this.history.push(this.normalString)
+        this.executeColonCommand(cm, this.normalString)
+        this.isColon = false
+    }
+
+    this.enterInsertMode(cm)
+
+
+
+}
+
+
+
+function escapeKeyHandler(cm) {
+    if (!this.insertMode) {
+        this.normalString = ''
+        this.isColon = false
+    }
+
+    this.insertMode = false
+    cm.setOption('disableInput', true)
+}
+
+
+function colonKeyHandler(cm, e) {
+    if (this.isColon) {
+        if (e.code == 'Enter') {
+            this.enterKeyHandler(cm, e)
+        } else if (e.code == 'Backspace') {
+            this.backspaceHandler(cm, e)
+        } else if (e.code == 'Escape') {
+            this.escapeKeyHandler(cm, e)
+        } 
+
+        else if (e.key == 'ArrowUp' || e.key == 'ArrowDown') {
+            if (exists(this.history)) {
+                console.log( 'arrows' )
+                const increment = e.key == 'ArrowUp' ? 1 : -1
+                const p = this.history[this.history.length - this.historyIndex + increment]
+                if (p) {
+                    console.log( 'success' )
+                    this.historyIndex += increment
+                    this.normalString = p
+                }
+            }
+        }
+
+        else if (!nonLetterKeys.includes(e.key)) {
+            this.normalString += e.key
+        }
+        return true
+    }
+
+    else if (e.code == 'Semicolon') {
+        if (e.shiftKey) {
+        this.insertMode = false
+        this.isColon = true
+        cm.setOption('disableInput', true)
+        }
+
+        else {
+            cm.replaceSelection(':')
+        }
+        e.preventDefault()
+        return true
+    }
+
+}
+
+function enterVimMode() {
+    // not yet
+}
+
+
+function backspaceHandler(cm, e) {
+    e.preventDefault()
+    if (this.insertMode) {
+        this.insertString = spell.deleteLastWord(this.insertString)
+        cmDeleteLastWord(cm)
+    } else if (this.isColon) {
+        this.normalString = this.normalString.slice(0, -1)
+    } else {
+        this.normalString = spell.deleteLastWord(this.normalString)
+    }
+}
+
+
+
+
+function enterBlock(cm) {
+    cm.state.blockEnter = cm.getCursor()
+    const [line, spaces, tabSize] = cmgetter(cm, 'LINE', 'SPACES', 'TABSIZE')
+
+    const [startDelimiter, endDelimiter] = [' {', '}']
+    const start = startDelimiter + '\n' + spaces + ' '.repeat(tabSize)
+    const end = '\n' + spaces + endDelimiter
+    cm.operation(() => {
+        cm.replaceSelection(start + end)
+        cmCursor(cm, (ch, line) => [line - 1, 1000])
+    })
+}
+
+
+function cmSprawl(cm, regex, {limit = 10, mode = 'line'} = {}) {
+    regex = prepareRegex(regex, '') 
+    let n = cm.getCursor().line + 1
+    while (true) {
+        line = cm.getLine(n)
+        if (regex.test(line)) {
+            if (mode = 'ch') {
+                let ch = line.search(prepareRegex(regex))
+                return Pos(n, ch)
+            }
+            else {
+                return n
+            }
+        }
+        else {
+            n++
+            if (n > limit) return null
+        }
+    }
+}
+
+
+function exitBlock(cm) {
+    let n = cmSprawl(cm, /^ *}|^\S/, {limit: 3})
+    if (n) {
+        const spaces = getSpaces(cm.getLine(n))
+        cm.operation(() => {
+            cm.setCursor(n, 1000)
+            cm.replaceSelection(sn + spaces)
+        })
+    }
+
+}
+
+function exitBlock2(cm) {
+    // let {line, spaces, mode, tabWidth} = cminfo(cm)
+
+    const {upline, indentation, tabSize} = cmgetter(cm, 'UPLINE', 'INDENT', 'TABSIZE')
+    if (indentation < tabSize) {
+        return
+    }
+
+    spaces = spaces.slice(tabWidth)
+    let exit = spaces + getBlockDelimiter(mode, false) + '\n' + spaces
+
+    if (!exists(line)) {
+        cmReplaceLine(cm, exit)
+    } else {
+        cm.operation(() => {
+            cmCursor(cm, 'LINE-END')
+            cm.replaceSelection('\n' + exit)
+        })
+    }
+}
+
+
+
+function cmAppendText(cm, content) {
+    cm.replaceRange(content, cm.getCursor())
+}
+
+
+function cmReplaceLine(cm, content) {
+    const pos = {line: cm.getCursor().line, ch: 0}
+    cm.replaceRange(content, pos)
+}
+
+
+function getBlockDelimiter(mode, enter = true) {
+    if (mode == 'javascript') 
+        return enter ? ' {' : '}'
+    if (mode == 'python') 
+        return enter ? ':' : ''
+}
+
+
+function cminfo(cm) {
+    const cursor = cm.getCursor()
+    const mode = cm.getOption('mode') || 'javascript'
+    const tabWidth = cm.getOption('tabWidth') || 4
+    const line = cm.getLine(cursor.line)
+    const spaces = line.match(/^ */)[0]
+    return {
+        tabWidth,
+        spaces,
+        mode,
+        ch:         cursor.ch,
+        lineNumber: cursor.line,
+        line:       line,
+    }
+}
+
+
+function divify(el, content, attrs) {
+    if (attrs) el += ' '
+    return '<' + el + attrs + '>' + content + '</' + el + '>'
+}
+
+
+function enterInsertMode(cm) {
+    cm.state.tabCount = 0
+    cm.state.lastWord = ''
+    this.normalString = ''
+    this.insertString = ''
+    this.insertMode = true
+    cm.setOption('disableInput', false)
+}
+
+
+
+// movement keys had the instant ability to override anything.
+// 
+// to pay a larger amount.
+// to give an advantage to the next iteration.
+// i have always wanted to work for a certain population setl( )
+// i have always made mistakes at the very outset
+
+
+function cmCursor(cm, fn, value = false) {
+    if (!fn) return
+    if (isObject(fn)) return cm.setCursor(fn)
+
+    const {line, ch} = cm.getCursor()
+
+    switch(fn) {
+        case 'IS-START':
+            return ch === 0
+
+        case 'IS-END':
+            return cm.getLine(line).length == ch
+
+        case 'DOCUMENT-START':
+            a = cm.firstLine()
+            b = 0
+            break
+
+        case 'DOCUMENT-END':
+            a = cm.lastLine()
+            b = 1000
+            break
+
+        case 'LINE-START':
+            a = line
+            b = 0
+            break
+
+        case 'LINE-START-SMART':
+            a = line
+            b = cmgetter(cm, 'indent')
+            break
+
+        case 'LINE-END':
+            a = line
+            b = 1000
+            break
+
+        case 'UPLINE-START':
+            a = line - 1
+            b = 0
+            break
+
+        case 'UPLINE-END':
+            a = line - 1
+            b = 1000
+            break
+
+        default:
+            if (isFunction(fn)) {
+                const product = fn(ch, line)
+                if (isArray(product)) {
+                    [a,b] = product
+                }
+                else if (isObject(product)) {
+                    a = product.line
+                    b = product.ch
+                }
+            }
+            else if (isNumber(fn)) {
+               a = line
+               b = fn
+            }
+
+            else if (isArray(fn)) {
+               a = fn[0]
+               b = fn[1]
+            }
+    }
+    if (value) {
+        return [a,b]
+    }
+    else {
+        cm.setCursor(a,b)
+    }
+}
+
+function cmCursorOLD(cm, fn) {
+    const {line, ch} = cm.getCursor()
+    cm.setCursor(Pos(line, isFunction(fn) ? fn(ch) : fn))
+}
+
+
+function cmEditWrapper(cm, styleObject = {'FontSize': 20}) {
+    const el = cm.getWrapperElement()
+    console.log( el.style )
+    mergeInPlace(el.style, styleObject)
+    console.log( el.style )
+}
+
+function cmAddTab(cm, n) {
+        if (!isDefined(n)) n = cm.getOption('tabSize')
+        cm.replaceSelection(toSpaces(n))
+        cm.state.tabCount = 0
+}
+function cmTabCompletion(cm) {
+    cm.state.tabCount += 1
+
+    if (cm.state.tabCount == 1) {
+        const match = this.insertString.trim()
+        console.log( 'match', match )
+
+        if (!match) {
+            console.log( 'adding 4 spaces' )
+            cmAddTab(cm, 4)
+            return
+        }
+
+        const range = cm.findWordAt(cm.getCursor())
+        const word = cm.getRange(range.anchor, range.head)
+        console.red( word )
+
+        if (word.startsWith('f')) {
+            cm.state.snippetString = jspymap['js']['fsnippet'](word.slice(1))
+            cmSnippetReplacement(cm, range, cm.state.snippetString)
+        }
+        else if (word in snippetmap) { // Snippet Expansion
+            console.red( 'word in snippet map' )
+            cm.state.snippetString = transformedsnippetmap[word]
+            cmSnippetReplacement(cm, range, cm.state.snippetString)
+            
+        }
+        else if (/^(?:\.\w+|div|p|section)/.test(match)) {
+            const el = match.startsWith('.') ? 'div' : match
+            const classTag = match.startsWith('.') ? match.slice(1) : ''
+            const product = divify(el, '', classTag).replace(RegExp(el), el + ' ')
+            this.insertString = product
+            cm.operation(() => {
+                cm.replaceRange(product, range.anchor, range.head)
+                cmCursor(cm, range.anchor.ch + 2 + match.length)
+            })
+        }
+        else {
+            console.visible( match )
+            console.log( 'adding 1 space' )
+            cmAddTab(cm, 1)
+        }
+    }
+
+    else if (cm.state.snippetString) {
+        console.red( 'cm snippet str', cm.state.snippetString, cm.state.tabCount )
+        const items = cm.state.snippetString.split(snippetDelimiter)
+        const item = items[cm.state.tabCount - 1]
+        console.log( items, item )
+        let charIndex = item.length - item.search(/\n/) + cm.state.extraSnippetSpaces
+
+        cmCursor(cm, (ch, line) => {
+            if (item.includes('\n')) { // TODO
+                return [line + 1, charIndex]
+            }
+            return ch + item.length
+        })
+
+        if (cm.state.tabCount > items.length - 1) {
+            cm.state.tabCount = 0 
+            cm.state.snippetString = ''
+            this.insertString = ''
+            console.log( 'finished at snippet tab completion' )
+        }
+    }
+
+    // cm.replaceRange(product, Codemirror.Pos(lineNumber, -1 * match.length))
+    // cm.replaceRange(product, ...cmRangeHelper4(0, -1 * match.length, 0, 0))
+    // cm.setCursor({line: lineNumber, ch: ch - product.length})
+}
+
+
+
+function cmRangeHelper5(cm, a = 0, b = 0, c = 0, d = 0) {
+    const {line, ch} = cm.getCursor()
+
+    if (isFunction(b)) b = b(ch, cm.getLine(line).length)
+    if (isFunction(d)) d = d(ch, cm.getLine(line).length)
+
+    return [
+        {line: line + a, ch: b},
+        {line: line + c, ch: d}
+    ]
+}
+
+
+function cmInitializeBuffers(cm, buffers, bufferIndex = 0) {
+    cmInitializeState(cm, {
+        buffers, 
+        bufferIndex,
+        tabCount: 0,
+        lastWord: '',
+        store: new Storage2({mode: String, fallback: 'today.txt'}),
+        irm: {
+            'js': {
+                'foo': 'foobar',
+            }
+        }
+    })
+    cm.state.store.add('foo', 'it is set as a string, so only strings are permitted foooo!')
+    cm.state.store.add('woo', 'it is set as a string, so only strings are permitted woo!')
+
+    cm.state.buffers.forEach((buffer, i) => {
+        const text = getStorage(buffer, '')
+        cm.state[buffer] = CodeMirror.Doc(text, null)
+    })
+
+    const currentBuffer = getStorage('currentBuffer', DEFAULT_BUFFER) 
+    cm.state.bufferIndex = cm.state.buffers.indexOf(currentBuffer)
+    cmOpenBuffer(cm, currentBuffer)
+}
+
+function cmCursorToEnd(cm) {
+    cm.setCursor({line: cm.lastline(), ch: 1000})
+}
+
+
+function cmOpenBuffer(cm, buffer) {
+    cm.swapDoc(cm.state[buffer])
+}
+
+
+function cmToggleBuffer(cm) {
+    if (!cm.hasFocus()) return
+    const index = ++cm.state.bufferIndex % cm.state.buffers.length
+    const buffer = cm.state.buffers[index]
+    console.log( buffer , 'buffer name')
+    cmOpenBuffer(cm, buffer)
+    cmCursor(cm, 'DOCUMENT-END')
+}
+
+
+function cmInitializeState(cm, object) {
+    mergeInPlace(cm.state, object)
+}
+
+
+function keyAHandler(cm, e) {
+    if (this.insertMode) {
+        return
+    }
+
+    if (e.shiftKey) {
+        cmCursor(cm, 'LINE-END')
+    }
+    this.insertString = ''
+    this.enterInsertMode(cm)
+    e.preventDefault()
+}
+
+
+function keyIHandler(cm, e) {
+    if (this.insertMode) {
+        this.insertString += e.key
+        return
+    }
+
+    if (e.shiftKey) {
+        cmCursor(cm, 'LINE-START-SMART')
+    }
+    this.insertString = ''
+    this.enterInsertMode(cm)
+    e.preventDefault()
+}
+
+function previewItems() {
+
+}
+
+
+
+function cmGrab(cm, arg) {
+    const [indentation, data] = cmgetter(cm, 'INDENT', 'LINE')
+}
+
+
+function cmEditor(cm, mode) {
+    console.log( 'hi from cmeditor' )
+
+    const [indentation, data] = cmgetter(cm, 'INDENT', 'LINE')
+    console.log( indentation, data, 'from cm editor' )
+
+    let s = ''
+    let rangeMode = 'LINE-START-TO-LINE-END'
+    const start = jspymap['js']['const']
+
+    switch(mode) {
+        case 'DICT-OBJ': 
+        case 'DICT-LINE': 
+            s = sliceEditFactory(dobjParser, 'EQUALS', start)(data, mode)
+            break
+        case 'GRAB-REGEX':
+        case 'GRAB-QUOTE':
+            s = search(/\/.+?\/|(?<=\()[\'\"].*?(?<!\\)[\']/, data)
+            break
+        case 'GRAB-REGEX':
+            s = search(/\/.+?\/|(?<=\()[\'\"].*?(?<!\\)[\']/, data)
+            break
+    }
+    if (!s) {
+        console.red( 'NO MATCH at cmEditor for dobjparse')
+        return 
+    }
+    s = indent(s + sn, indentation)
+    cmReplaceRange(cm, s, rangeMode)
+}
+
+
+function cmRangeGetter(cm, mode) {
+    const line = cmgetter(cm, 'LINE-NUMBER')
+    function runner(mode) {
+        switch(mode) {
+            case 'DOCUMENT':
+                return [0, 0, cm.lastLine(), 1000]
+            case 'LINE-START-TO-LINE-END': 
+                return [line, 0, line, 1000]
+            case 'LINE-SMART-TO-END':
+                return [line, cmgetter(cm, 'INDENT'), line, 1000]
+        }
+    }
+    const r = runner(mode)
+    return [Pos(r[0], r[1]), Pos(r[2], r[3])]
+}
+
+function cmReplaceRange(cm, content, mode) {
+    cm.operation(() => {
+        cm.replaceRange(content, ...cmRangeGetter(cm, mode))
+        cm.scrollIntoView()
+    })
+}
+
+function changeIt() {
+	if (!document.styleSheets) return;
+    console.log( stringify(document.styleSheets ))
+    const sheet = document.styleSheets[1]
+    console.log( stringify(sheet) )
+	var rules = new Array();
+	if (sheet.cssRules)
+		rules = sheet.cssRules
+	else if (sheet.rules)
+		rules = sheet.rules
+	else return;
+    console.log( rules )
+	rules[rules.length-1].style.backgroundColor = '#EEF0F5';
+}
+// fn split has implicit trim
+
+function focusHandler(e) {
+    this.codemirror.focus()
+    this.returnTime = e.timeStamp
+    const delta = Math.floor((this.returnTime - this.leaveTime) / 1000)
+    if (delta > 1000) {
+        console.log( 'whoa uve been gone for quite awhile' )
+        console.log( 'Delta: ', delta )
+        // perhaps I have been a bit cavalier.
+        // 340 -> 560 
+        // 120 -> 460
+        // 
+
+        
+
+    }
+}
+
+
+function blurHandler(e) {
+    this.escapeKeyHandler(this.codemirror)
+    this.leaveTime = e.timeStamp
+}
+
+function cmSubmitter(cm, tag = null) {
+    const text = cm.getValue()
+    if (!tag) tag = getPartitionTag(text) || 'foo'
+    cm.state.store.add(tag, text)
+}
+
+
+function getPartitionTag(s) {
+    return search('^' + Regex2(packmap3), s.trim())
+}
+
+
+function cmSetget(cm, parser) {
+    this.codemirror.setValue(parser(cm.getValue()))
+}
+
+function buttonHandlers(key, name) {
+
+    if (key == 'create') {
+        this.createAction(key, name)
+    }
+    else if (key == 'generate') {
+        console.log( 'stil in progress', name )
+    }
+
+}
+
+function buttonHandler2(name) {
+    console.log( 'clicking from button', name )
+}
+
+
+// an infinite ... void.
+// i didnt expect it to be this high.
+// next time, be more careful.
+// To completely lack social and plitical power ... is ... incredible. 
+// using too many resources
+// I use many resources ... lol. It was an unique occurence. 
+// At the end of the day, money solves everything. 
+// Perhaps the key is peak heak. 
+/* 
+A: 
+    I will pay $150 extra for electricity bill. 
+
+B:
+    I would like to call Con Edison for 3 reasons:
+
+        1. Obtain your account information.
+        With this information, will be able to online:
+        See every hour, and every day, how much is used.
+
+
+        2. Ask them to lower the bill. This building is classified as "commercial." However, currently, there is no commercial business in the business. Commerical has higher electricity rate than residential. It is very possible they will lower the bill for this month or next month.
+
+        In order to do (1) and (2), Con Edison will ask you to verify that you are the account holder.
+
+C:
+    300 dollar electricity bill is extremely not normal.
+
+    I use a lot of electricity. True. In the past, I live at Fort Hamilton 55th St. 7 people. We all use heater. Maximum electricity bill is 273 dollars.
+
+    Why is it this high?
+    
+D:
+    Next Month.
+
+    dont be hasty.
+
+
+
+
+
+
+
+*/
+
+
+// A pretty big mistake I made.
+// Consolidate all of the facts. And do things straight up. 
+
+
+function getElement(id, mode) {
+    const element = document.getElementById(id)
+    console.log( element.outerHTML )
+    try {
+        if (mode) {
+            this.displayString = stringify(element[mode])
+        }
+        else {
+            this.displayString = stringify(element)
+        }
+    }
+    catch(e) {
+        console.log( e )
+        console.log( element )
+    }
+}
+
+
+
+
+// She made smart decisions with regards to not giving a quick answer. 
+// To have had freedom, and then to have had this uncomfortable feeling. Similar to letting down Robin. 
+
+
+// u dont always know how smart someone is until you interact with them. 
+// 
+// when i make mistakes...
+
+// she is smart in her own way.
+// she is easily taken advantage of?
+// it wasn't my intention to do this 
+// 
+// 
+// it's not impossible. 
+// 

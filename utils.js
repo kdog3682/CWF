@@ -1,3 +1,76 @@
+const cssreset = `
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+`
+
+const defaultAnimationOptions = {
+    duration: 2
+}
+function toNumber(x) {
+    return isNumber(x) ? Number(x) : x
+}
+
+
+const DEFAULT_BUFFER = 'cwf'
+const SNIPPET_BUFFER = 'snippets'
+const BUFFERS = [DEFAULT_BUFFER, SNIPPET_BUFFER]
+
+const opacitykfstring = `@keyframes opac {
+  0%   { opacity: 0; }
+  100% { opacity: 1; }
+}
+`
+const preparevuedict = {
+        cont: 'container',
+        '(?<=\\s)cmtextarea(?=\\s)': 'textarea ref=codemirror',
+        '(?<=\\s|\\.)cm(?=\\s)': 'CodeMirror',
+        ct: 'container',
+        sent: 'sentence',
+        cls: 'class',
+        lst: 'list',
+        ' gt ': ' > ',
+        ' lt ': ' < ',
+        'qm\\b': '?',
+        ';': ':',
+        '`': '~',
+        '^33': '##',
+        '(?<=[a-z][a-z])1\\b': '!',
+        '(?<=[a-z][a-z])0(?![a-z])': ')',
+        // '(?<=[a-z][a-z])0\\b': ')',
+        '(?<!he)lp': '(',
+        '(?<![aeiou])rp\\b': ')',
+        '\\b9(?=[a-zA-Z])(?!am)': '(',
+        '\\b3(?=[a-zA-Z])': '#',
+        '\\b4(?!evr|get|got)(?=[a-zA-Z])': '$',
+        '\\b5(?=[a-zA-Z])': '%',
+        '(?<=[^\\d\\s])8(?!\\d)': '*',
+        '^m\\b': 'methods',
+    }
+/*
+
+animationName
+animationDuration
+animationTimingFunction
+animationDelay
+animationIterationCount
+animationDirection
+
+*/
+
+const fadestring = `
+
+.fade-enter-active {
+    transition: opacity 2s
+}
+
+.fade-leave-active { transition: opacity 1s; } 
+.fade-enter, .fade-leave-to { opacity: 0; }
+
+`
+const zombiesong = 'Zombie Nation - Kernkraft 400 (HQ)-trS2nrkN0_k.mp3'
 
         const JSONBIN_VERSION_ID = '5e9cf5c82940c704e1db3606'
         const JSONBIN_NO_VERSION_ID = '5f30ae36dddf413f95c101d3'
@@ -113,7 +186,13 @@ Kevin
 `
 
 
-const attraliasmap = {
+const cssaliasmap = {
+    'easein': ['easing', 'ease-in'],
+    'easeout': ['easing', 'ease-out'],
+    'easeinout': ['easing', 'ease-in-out'],
+    bg: 'background',
+    times: 'iterations',    
+    o: 'opacity',
     'r': 'right',
     'l': 'left',
     't': 'top',
@@ -657,6 +736,32 @@ if (isNode()) {
         old(...args)
      }
 
+
+     console.visible = (x) => {
+         old(visible(x))
+     }
+     console.forward = (s) => {
+         const product = s.replace(/\\[\/n\'\"]/g, (x) => {
+         switch(x) {
+             case '\\n': return '\n'
+             case '\\\'': return '\''
+             case '\\\"': return '\"'
+             case '\\/': return '/'
+         }
+     })
+         old(product)
+         return product
+     }
+
+     console.reverse = (s) => s.replace(/\n|\'|\"|\\/g, (x) => {
+         switch(x) {
+             case '\n': return '\\n'
+             case '\'': return '\\\''
+             case '\"': return '\\\"'
+             case '\\': return '\\\\'
+         }
+     })
+
      console.string = (s) => old(stringify(s))
      console.red = (...args) => {
         old(__line, red, b, args.join('\n\n------------------\n\n'), c)
@@ -673,7 +778,7 @@ if (isNode()) {
      }
 
      console.blue = (...args) => {
-        old(__line, blue, b, ...args, c)
+        old(__line, blue, b, args, c)
     }
 
      console.green = (...args) => {
@@ -688,9 +793,25 @@ else {
     console.question = (x) => console.log('%c QUESTION: ' + x, 'background: red; color: blue; font-size: 14px;')
  
     console.green =   (x) => console.log('%c' + x, 'color: green; font-size: 16px;')
-    console.blue =  (x) =>   console.log('%c' + x, 'color: blue; font-size: 16px;')
+    console.blue =  (x) =>   console.log('%c' + stringify(x), 'color: blue; font-size: 16px;')
 
-    console.string = (s) => old(stringify(s))
+    console.string = (s) => console.log(stringify(s))
+    console.modal =  (...args) =>  {
+        console.log('%c' + args.join(sn), 'color: black; font-weight: bold; font-size: 14px;')
+        return ''
+    }
+
+
+     console.visible = (x) => {
+         if (x) console.log(visible(x))
+            else {
+                old('the value doesnt exist')
+            }
+     }
+
+     console.announce = (x) => {
+        console.log('ANNOUNCEMENT:', x)
+     }
     console.red =  (...args) =>  {
         let x = args.join('\n------\n')
         console.log('%c' + x, 'color: red; font-size: 16px;')
@@ -2020,9 +2141,13 @@ const nameswapdict = {
     mrep2: 'mreplace',
 }
 const myabc = ['a', 'b', 'c', 'd', 'e']
+const abc = 'a b c'
 
 const borderBottomRE = '(b[trbl](?!ue))(\\d*)(px|em)?(solid|dotted)?([a-z]\\d*)'
-const myitems = {
+const mymap = {
+mynumber:'425-381-0608',
+myphonenumber:'425-381-0608',
+mypn: '425-381-0608',
     craigslistinfo:
         'Hello,\nIf this room is still available,\nI am interested in taking a look.\n\nThanks,\nKevin\n\nPersonal Information\nSeeking to move in for:  January 1st, 2021\nAge: 30\nSex: Male\nOccupation: Web Design\nPhone: 425-381-0608\nFree times to view the room: (Weekends after 2pm, Weekdays after 5pm)',
 }
@@ -2467,13 +2592,16 @@ function downloadStorage(key = null) {
     download(outpath, toString(store))
 }
 // How would you rewrite this to the same effect, without using eval?
-function evaluator(text) {
+
+function evaluator(s) {
+    function runner(s) {
     try {
-        return eval(text)
+       return eval(s)
     } catch (e) {
-        console.warn(e)
-        return null
+        return e
     }
+    }
+    return stringify(runner(s))
 }
 
 
@@ -3944,40 +4072,21 @@ function isLongMathExpression(s) {
     return true
     return count(rescape(['+', '-', '*']), s)
 }
-function mathParser3(s) {
-    // differs from the original, which is mathParser. mathParser2, is the PREVIOUS original. mathParser3 originates from mathparser. the difference is that u can now do direct evaluations of i^i. dont need to write [i^i]
-    let count = 0
 
-    function mathFractionParser(_, s) {
-        let items
-        if (test('//', s)) {
-            items = s.split('//')
-            // console.log( items )
-            return items.map(runner).join(' / ')
+        const mathParser3RE = / ?[dtp\-\=] ?|sqrt\w+|\w+?e[\w\(\)]+/g
+        function mathParser3Helper(x) {
+            if (x.startsWith('sqrt')) return 'Math.sqrt(' + x.slice(4) + ')'
+            if (test('e', x)) return 'Math.pow(' + x.split('e').join(', ') + ')'
+            x = x.trim()
+            switch (x) {
+                case 'd': return ' ÷ '
+                case 't': return ' * '
+                case 'p': return ' + '
+                default:  return ' ' + x + ' '
+            }
         }
-    }
-
-    function runner(s) {
-        if (count++ > 0 && isLongMathExpression(s)) s = parens(s)
-
-        let fractionStatus = false
-        // s = drep(s, symboltonumberdict, {escape: true})
-        s = superReplace(s, {
-            'frac(\\S+)': mathFractionParser,
-            percent: '%',
-            ' ?= ?': normalizeSpacesFactory('='),
-            ' ?d ?': normalizeSpacesFactory('÷'),
-            ' ?t ?': normalizeSpacesFactory('*'),
-            ' ?- ?': normalizeSpacesFactory('-'),
-            // ' ?/ ?': normalizeSpacesFactory('/'),
-            ' ?p ?': normalizeSpacesFactory('+'),
-            '(\\w+?)e([\\w\\(\\)]+)': createReplacer('Math.pow($a, $b)'),
-            'sqrt(\\w+)': createReplacer('Math.sqrt($a)'),
-        })
-
-        return s
-    }
-    return runner(s)
+function mathParser3(s) {
+        return s.replace(mathParser3RE, mathParser3Helper)
 }
 
 function mathParser(s) {
@@ -4414,6 +4523,7 @@ function cssRunner(item, comments = true) {
 }
 
 function runCss(item, comments = true) {
+    if (item.length == 1) return null
     let css = []
     let store = []
     let match, result, a, b, getDimension, unit
@@ -6528,18 +6638,28 @@ function addDotSlash(link) {
         }
     }
 function toOpeningTag(x, attrs = null) {
+    // console.red( x, attrs )
     if (!x) return ''
 
     if (isArray(x)) {
-        let start = x.map(item => '<' + item + '>').join('')
-        return start
+        return x.map(item => '<' + item + '>').join('')
     }
-    if (isString(attrs) && (x == 'script' || x == 'link')) {
-        attrs = createDefaultAttrs(x, attrs) 
+
+    if (exists(attrs)) {
+        if (isString(attrs)) {
+            if (x == 'script' || x == 'link') {
+                attrs = createDefaultAttrs(x, attrs) 
+            }
+            else {
+                attrs = ' class="' + attrs +'"'
+            }
+        }
+
+        else if (isObject(attrs)) {
+            attrs = stringReduction(attrs, htmlStringReductionObject)
+        }
     }
-    else if (exists(attrs)) {
-        attrs = stringReduction(attrs, htmlStringReductionObject)
-    }
+
     else {
         attrs = ''
     }
@@ -6671,6 +6791,7 @@ const cssChunkStringReductionObject = {
         reverse: true,
         indented: true,
 }
+
 
 function createClass(name, css) {
     if (!exists(css)) return
@@ -8309,6 +8430,52 @@ function jspyifParser(_, tag, s) {
     return tag + s.replace('!', 'not ')
 }
 
+function sleepclock({
+        onend = () => 1000,
+        condition = () => null,
+        onstart = console.log,
+        ontick = console.log,
+        duration = 3000,
+        increment = 1000,
+        count = 0,
+        id = null,
+        gift = 'abc',
+        context = null,
+        bind = false,
+        immediate = true} = {}) {
+
+    if (bind) {
+        ontick = ontick.bind(this)
+    }
+    const ticker = () => {
+    }
+
+    return new Promise((resolve) => {
+        const runner = () => {
+            id = setTimeout(() => {
+                ticker()
+
+                count += increment
+                ontick(count, duration)
+
+                if (count < duration) {
+                    runner()
+                } else {
+                    clearTimeout(id)
+                    console.log( 'finishing' )
+                    resolve(gift)
+                }
+            }, increment)
+        }
+
+        runner()
+    })
+}
+
+function toMilliseconds(n) {
+    return (n * 1).toFixed(3)
+}
+
 function sleep(ms = 3000) {
     if (ms < 10) ms *= 1000
     return new Promise((resolve) => {
@@ -9053,11 +9220,10 @@ function frepnew(text, prevdict) {
 }
 
 function frep(text, dict) {
-    if (!exists(dict)) return text
     function parser(...args) {
         for (let [k, v] of Object.entries(dict)) {
             if (test(replaceLookAround(k), args[0])) {
-                return isString(v) ? v : v(...args)
+                return isString(v) ? v : v(...args.slice(0, -2).filter(isDefined))
             }
         }
     }
@@ -9968,12 +10134,6 @@ function audioEND() {
     console.log(e)
     this.audioStatus = 'END'
 }
-const a1 = (x) => console.log(x)
-const a2 = (x) => {
-    setTimeout(() => {
-        console.log('abc')
-    }, 1000)
-}
 
 function ssapeakItems(...args) {
     function action(s) {
@@ -10046,74 +10206,19 @@ function jsonbin(value, fn = null) {
     })
 }
 
-function jsonbin2({mode = 'GET', value = null, versioning = false } = {}) {
-
+function jsonbinasdfsdfasdf2({mode = 'GET', value = null, versioning = false } = {}) {
+    console.log( 'jsonbin2' )
     const version = versioning ? 'latest' : ''
-    const id = versioning ? JSONBIN_VERSION_ID : JSON_NO_VERSION_ID
+    const id = versioning ? JSONBIN_VERSION_ID : JSONBIN_NO_VERSION_ID
     const url = pathjoin('https://api.jsonbin.io/b', id, version)
+    console.log( url )
     const request = new XMLHttpRequest()
 
-    return new Promise((resolve, reject) => {
-        request.onreadystatechange = () => {
-            if (request.readyState == XMLHttpRequest.DONE) {
-                resolve(request.responseText)
-            }
-        }
-
-        request.open(mode, url, true)
-        request.setRequestHeader('public', true)
-        request.setRequestHeader('secret-key', JSONBIN_SECRET_KEY)
-        request.setRequestHeader('Content-Type', 'application/json')
-        request.setRequestHeader('versioning', boolean(version))
-        if (mode == 'PUT' || mode == 'POST') {
-            if (content && !isPrimitive(content)) {
-                content = JSON.stringify(content)
-            }
-            request.send(content)
-        }
-    })
-}
-
-function JSONBINPromiseHandler(type, value = {}, { public = true, version = false } = {}) {
-    let id
-
-    if (version) {
-        id = '5e9cf5c82940c704e1db3606'
-        version = latest
-    } else {
-        id = '5f30ae36dddf413f95c101d3'
-        version = ''
-    }
-
-    switch (type) {
-        case 'write':
-            type = 'POST'
-            break
-
-        case 'read':
-            type = 'GET'
-            break
-
-        case 'update':
-            type = 'PUT'
-            break
-
-        default:
-            type = type.toUpperCase()
-    }
-
-    const secretkey = '$2b$10$RpyRq6D2g4SIaVl.vix5W.vq33VVnyQgzeCev0fLf2pJo2LUVf8DC'
-    const url = pathjoin('https://api.jsonbin.io/b', id, version)
-
-    if (content && !isPrimitive(content)) {
-        content = JSON.stringify(content)
-    }
-
-    const request = new XMLHttpRequest()
-    return new Promise((resolve, reject) => {
+    const promise = new Promise((resolve, reject) => {
         request.onreadystatechange = () => {
             if (request.readyState == XMLHttpRequest.DONE) {
                 if (request.status > 200) {
+                    console.log( request )
                     reject('Error, status code = ' + request.status)
                 } else {
                     resolve(request.responseText)
@@ -10121,12 +10226,86 @@ function JSONBINPromiseHandler(type, value = {}, { public = true, version = fals
             }
         }
 
-        request.open(type, url, true)
-        request.setRequestHeader('public', public)
-        request.setRequestHeader('secret-key', secretkey)
+        console.log( 'openig' )
+        request.open(mode, url, true)
+        request.setRequestHeader('secret-key', JSONBIN_SECRET_KEY)
+        request.setRequestHeader('public', true)
         request.setRequestHeader('Content-Type', 'application/json')
         request.setRequestHeader('versioning', boolean(version))
-        request.send(content)
+        if (mode == 'PUT' || mode == 'POST') {
+            console.blue( 'put or post' )
+            if (value && !isPrimitive(value)) {
+                value = JSON.stringify(value)
+            }
+            if (value == null) {
+                console.blue( 'null to emptystr' )
+                value = ''
+            }
+            request.send(value)
+        }
+        else {
+            request.send()
+        }
+    })
+}
+
+function jsonbin2({value = null, mode = 'GET', secretkey = JSONBIN_SECRET_KEY, public = 'true', versioning = false, meta = false } = {}) {
+    mode = mode.toUpperCase()
+    const version = versioning ? 'latest' : ''
+    const id = version ? JSONBIN_VERSION_ID : JSONBIN_NO_VERSION_ID
+    const url = pathjoin('https://api.jsonbin.io/b', id, version)
+    const request = new XMLHttpRequest()
+
+    console.log( 'starting jsonbin' )
+    return new Promise((resolve, reject) => {
+        request.onreadystatechange = () => {
+            if (request.readyState == XMLHttpRequest.DONE) {
+                if (request.status == 400 || request.status > 401) {
+                    const errorObject = {
+                        id,
+                        url,
+                        version,
+                        status: request.status
+                    }
+                    console.log( 'hi from error' )
+                    // console.log(errorObject)
+                    return
+                } else {
+                    console.log( 'hi from success' )
+                    resolve(parseJSON(request.responseText))
+                }
+            }
+        }
+
+        if (value) {
+            console.log( 'hi from value' )
+            if (isPrimitive(value)) {
+                value = {value}
+            }
+            if (meta) {
+                value = {
+                    meta: {
+                        timeStamp: datestamp(Number),
+                    },
+                    value: value
+                }
+            }
+            value = stringify(value)
+        }
+
+        request.open(mode, url, true)
+        request.setRequestHeader('secret-key', secretkey)
+        request.setRequestHeader('public', public)
+        request.setRequestHeader('Content-Type', 'application/json')
+        request.setRequestHeader('versioning', boolean(version))
+        console.log( value )
+        if (mode == 'GET') {
+            request.send()
+        }
+        else {
+            request.send(value)
+        }
+
     })
 }
 
@@ -10433,10 +10612,9 @@ function dlineParser(s) {
 }
 
 function dobjParser(s, mode = 'DICT-LINE') {
-    console.log( visible2(s) )
-
     const parser = ([a,b]) => parens(a, 'sq') + ': ' + dollarCapture(b) + ','
     const items = getLineInfoMAPS(s).map(parser)
+    console.log( items )
     switch(mode) {
         case 'DICT-OBJ': return parens(indent(items.join('\n')), 'brackify')
         case 'DICT-LINE': return parens(items.join(' '), '{ | }')
@@ -11049,7 +11227,7 @@ function fasterFunction(lang) {
 
 function count(el, s) {
     try {
-        return findall(escapeRegex(el), s).length
+        return s.match(RegExp(el, 'g')).length
     } catch {
         return 0
     }
@@ -11410,11 +11588,6 @@ const rm = {
     restarter: '(?<=^|\\n)',
     reew: '(?=\\n\\w|$)',
     reen: '(?=\\n\\n|$)',
-}
-const colonmap = {
-    ':fn': 'function',
-    ':js': 'javascript',
-    ':py': 'python',
 }
 const nb = {
     // thou: '000',
@@ -11795,6 +11968,9 @@ function getStorageKeys(key = null) {
     return key ? keys.filter(parser) : keys
 }
 const jswb = {
+    'ihtml': 'innerHTML',
+    'ohtml': 'outerHTML',
+    'doc': 'document',
     'dglbi': 'document.getClient',
     'elbyid': 'document.getElementById',
     'catch:': 'catch(e)',
@@ -11930,7 +12106,7 @@ const pynb = {
 }
 const JSWBMAP = { ...jswb, ...wb }
 const PYWBMAP = { ...pywb, ...wb }
-const JSNBMAP = { ...rm, ...jsrm, ...jsnb, ...nb, ...colonmap }
+const JSNBMAP = { ...rm, ...jsrm, ...jsnb, ...nb}
 const PYNBMAP = { ...rm, ...pyrm, ...pynb, ...nb }
 
 function copy(x) {
@@ -12348,7 +12524,8 @@ function isFunction(o) {
 }
 
 function replace(re, replacement, s, flags = 'gm') {
-    let regex = isRegExp(re) ? re : RegExp(re, flags)
+    const regex = prepareRegex(re, flags)
+    // console.error( regex )
     return s.replace(regex, replacement)
 }
 
@@ -12697,10 +12874,10 @@ function pipe2(...functions) {
 }
 function fParser(s) {
     if (s.includes('$')) return tildaParser(s)
-    return quotesForArrayItemsParser(s)
+    return arraymaker(s)
 }
 
-function quotesForArrayItemsParser(s) {
+function arraymaker(s) {
     let delimiter = /, ?|  /
     return parens(
         s
@@ -12727,6 +12904,12 @@ function simpleMerge(a, b) {
 function mergeDicts(...dicts) {
     return Object.assign({}, ...dicts)
 }
+function prepareIterable(data, mode) {
+    if (isObject(data)) {
+        return Object[mode](data)
+    }
+    return data
+}
 function mergeInPlace(obj, data){
     if (isArray(obj)) {
         if (isArray(data)) {
@@ -12736,7 +12919,7 @@ function mergeInPlace(obj, data){
         }
     }
     else if (isObject(obj)) {
-        for (let [k,v] of Object.entries( data )) {
+        for (let [k,v] of prepareIterable(data, 'entries')) {
             obj[k] = v
         }
     }
@@ -12986,8 +13169,11 @@ function indent(s, n = 4, {mode = 'null'} = {}) {
         }
     }
 
+    if (mode == 'replace') {
+        return s.replace(/^ */gm, toSpaces(n))
+    }
+
     if (mode == 'skipFirstLine') {
-        console.red( visible(toSpaces(n) ))
         return s.replace(/(?<=\n)/g, toSpaces(n))
     }
 
@@ -13564,12 +13750,12 @@ function filteredFindall(re, s, flags = 'gm') {
     return store
 }
 
-function prepareRegex(re, flags) {
+function prepareRegex(re, flags = null) {
     if (isRegExp(re)) {
         return re
     }
     else {
-        if (!flags) flags = getRegexFlag(re)
+        if (flags == null) flags = getRegexFlag(re)
         return new RegExp(re, flags)
     }
 }
@@ -13664,6 +13850,9 @@ function singleItemParserJS(s) {
 }
 
 function datestamp(mode = 'm-d-y', ...args) {
+    if (mode == Number) {
+        return Date.now()
+    }
     const modemap = {
         time: '%h:%m%p',
         mdy: '%M/%d/%Y',
@@ -15131,20 +15320,20 @@ class AdvancedStorage extends SimpleStorage {
 }
 
 class Storage2 extends SimpleStorage {
-    constructor({mode = Array} = {}) {
+    constructor({mode = Array, fallback = null} = {}) {
         super()
         this.mode = mode
+        this.fallback = fallback
+    }
+
+    get (k) {
+        return this.store[k || this.fallback]
     }
 
     add(k, v) {
-       switch(this.mode) {
-           case this.mode == String:
-             return this.addString(k, v)
-           case this.mode == Number:
-             return this.addNumber(k, v)
-           case this.mode == Array: 
-             return this.addList(k, v)
-       }
+        if (this.mode == String) return this.addString(k, v)
+        if (this.mode == Number) return this.addNumber(k, v)
+        if (this.mode == Array) return this.addList(k, v)
     }
 
     addNumber(k, v) {
@@ -15289,9 +15478,18 @@ function parens(s, type = 'parens') {
 }
 
 function split(s, cat = '\\s', delimiter = '\\s', parsers = null, starting = 1) {
-
+    if (isArray(s)) return [s[0], s.slice(1)]
     if (isString(s)) s = s.trim()
 
+    if (isRegExp(cat)) {
+        let [a, ...b] = s.split(cat)
+        let delimiter = search(cat, s)
+        return [a, b.join(delimiter)]
+    }
+
+    if (isNumber(cat)) {
+        return search('^' + '(.*?) '.repeat(cat) + '(.+)', s)
+    }
 
     if (isArray(cat)) {
         return search('^(.*?) (.+)', s).map((x, i) => {
@@ -15299,15 +15497,39 @@ function split(s, cat = '\\s', delimiter = '\\s', parsers = null, starting = 1) 
         })
     }
 
+    if (isObject(cat)) {
+        if (s.trim()) {
+            const items = s.split(' ')
+            if (items.length < cat.default.length) {
+                let index = items.length - 1
+                for (let i = index; i < cat.default.length; i++) {
+                    items.push(cat.default[i])
+                }
+                return items
+            }
+            else if (items.length == cat.default.length) {
+                return items
+            }
+
+            else {
+                const store = []
+                let index = items.length - cat.default.length
+                while (items.length > cat.default.length - 1) {
+                    store.push(items.pop())
+                }
+                return [...items, store.reverse().join(' ')]
+            }
+                
+        } else {
+            return cat.default
+        }
+    }
+
     switch (cat) {
         case 'dsn':
             return s.split(/  |\n/)
         case 'EQUALS':
             return search('^(.*?= ?)(.*)', s)
-        case isFunction(cat):
-            return cat(split(s, 'once', delimiter))
-        case isNumber(cat):
-            return [s.slice(0, cat), s.slice(cat)]
         case 'smart':
             delimiter = search(', ?|\\n|\\t', s)
             if (!delimiter) delimiter = ' '
@@ -15319,16 +15541,8 @@ function split(s, cat = '\\s', delimiter = '\\s', parsers = null, starting = 1) 
             return s.split(/(?<=[a-zA-Z])(?=\d)|(?<=\d)(?=[a-zA-Z])/)
         case 'ds':
             return s.split(/  |\n/)
-        case isRegexInstance(cat):
-            let [a, ...b] = s.split(cat)
-            let delimiter = search(cat, s)
-            return [a, b.join(delimiter)]
     }
 
-
-    if (isArray(s)) {
-        return [s[0], s.slice(1)]
-    }
 
     if (cat == 'list') {
         delimiter = search('  |,(?! )', s)
@@ -19220,6 +19434,57 @@ function fetched(url) {
         })
 }
 
+function clockfix(n) {
+    if (n < 10) n *= 1000
+    return n
+}
+
+function clockAsync(
+    {
+        onend = () => 1000,
+        condition = () => null,
+        onstart = console.log,
+        ontick = console.log,
+        duration = 3000,
+        increment = 1000,
+        context = null,
+        immediate = true,
+    } = {},
+    ...args
+) {
+    if (isNumber(arguments[0])) {
+        duration = clockfix(arguments[0])
+    }
+    let count = 0
+    let id = null
+
+    if (immediate) {
+        // console.log( 'hii' )
+        count += increment
+        ontick(count, duration)
+    }
+
+    function runner() {
+        count += increment
+        id = setTimeout(() => {
+            ontick(count, duration)
+
+            if (count >= duration || condition()) {
+                clearTimeout(id)
+                return new Promise(resolve => {
+                    resolve('hiii')
+                })
+            } else {
+                runner()
+            }
+        }, increment)
+    }
+
+    onstart(...args)
+    // onstart.bind(context)()
+    // context ? onstart.call(context, ...args) : onstart(...args)
+    return runner()
+}
 function clock(
     {
         onend = console.log,
@@ -19227,24 +19492,33 @@ function clock(
         onstart = console.log,
         ontick = console.log,
         duration = 3000,
-        increment = 100,
+        increment = 1000,
         context = null,
+        immediate = true,
     } = {},
     ...args
 ) {
+    if (isNumber(arguments[0])) {
+        duration = clockfix(arguments[0])
+    }
     let count = 0
     let id = null
+
+    if (immediate) {
+        // console.log( 'hii' )
+        count += increment
+        ontick(count, duration)
+    }
 
     function runner() {
         count += increment
         id = setTimeout(() => {
-            if (count > duration || condition()) {
+            ontick(count, duration)
+
+            if (count >= duration || condition()) {
                 clearTimeout(id)
-                return onend(...args)
+                return onend(...args, 'FINISHED')
             } else {
-                ontick(count, duration)
-                // ontick.bind(context)(duration - count)
-                // context ? ontick.call(context, count) : ontick(count)
                 runner()
             }
         }, increment)
@@ -19371,7 +19645,6 @@ function numbergen({
     }
     if (filter) store = store.filter(filter)
     if (evaluate) {
-        console.log(store)
         store = store.map(tryval)
     }
     return store
@@ -19714,6 +19987,7 @@ function runner94(line) {
         let regex = '((?:[a-zA-Z.-]+)(?: (?:>|~|\\+) [a-zA-Z.-]+)*) (.*)'
         ;[className, s] = searcher(regex, line)
     }
+    // console.error( className, '--', s )
 
     this.cssName = this.nickname.getShortName(className)
     return createClass(this.cssName, s)
@@ -19722,7 +19996,6 @@ function runner94(line) {
 class csslines {
     constructor(s) {
         // super(s)
-
         this.isMediaQuery = false
         this.cssName = null
         this.emptyLineCount = 0
@@ -19745,6 +20018,7 @@ class CssLineEdit {
         this.store = {}
         this.text = ''
         this.runner = runner.bind(this)
+        // console.error( this.runner )
         this.run()
     }
     run() {
@@ -20297,6 +20571,7 @@ function onIndexedChange(current, prev) {
     console.log('changing from ', prev, ' to', current)
 }
 
+
 function argGetter(items, mode = '') {
     const store = {}
     if (items.length == 2) {
@@ -20387,9 +20662,6 @@ function drep9002(s, dict) {
             }
         }
         else {
-            console.red('else')
-
-            // blue(args)
             let tag = args
                 .find((item, i) => {
                     if (!item) return false
@@ -20414,6 +20686,7 @@ function drep9002(s, dict) {
 
     if (exists(prose)) regexes.push(Regex2(prose, { mode: 'wb' }))
     const regex = Regex(regexes)
+    // console.error( regex, newdict )
     const flags = getRegexFlag(regex)
     const product = replace(regex, parserRunner, s, flags)
     return product
@@ -20623,7 +20896,8 @@ function addTextBlockBrackets(s) {
 }
 
 function mapgetter(key, map, fallback = null) {
-    if (key in map) return map[key]
+    if (!key) key = fallback
+    if (map[key]) return map[key]
     if (isDefined(fallback)) return fallback
     return key
 }
@@ -21524,6 +21798,7 @@ const yellow = util.colored('yellow')
 const blue = util.colored('blue')
 
 const math = {
+    gen4: mathgen4,
 
     applicable: {
         amount: 3, 
@@ -21550,7 +21825,7 @@ const math = {
     gen3: (s, { amount = 3, evaluate = false, start = 1 } = {}) =>
         math.numbergen({ pattern: math.expression3(s), amount, evaluate, start }),
 
-    gen2: (s, amount = 3, evaluate = false, start = 1) =>
+    gen2: (s, amount = 3, evaluate = false, start = 2) =>
         math.numbergen({ pattern: math.expression2(s), amount, evaluate, start }),
 
     display(s) {
@@ -21562,15 +21837,14 @@ const math = {
             pattern = math.expression(pattern, args)
         }
 
-        // util.log(applicable)
         return math.numbergen({ ...math.applicable, ['pattern']: pattern })
     },
     expressionDelimiter: '{',
     expressionDelimiter: '[',
     expression3(s) {
-        // pairs with mathParser3 for the no-bracket
         s = mathParser3(s)
-        console.log(s)
+       return (i) => s 
+        // console.log(s)
 
         function parser(i) {
             return superReplace(s, {
@@ -22405,6 +22679,122 @@ class asdfLineEdit {
 // patterns will show up out of the ruckus of all of this like WORKS
 // console.log( math.gen3('iei' , {evaluate: true}))
 
+
+class Calculation {
+    constructor() {
+        this._symbols = {};
+        this.defineOperator("!", this.factorial,      "postfix", 6);
+        this.defineOperator("^", Math.pow,            "infix",   5, true);
+        this.defineOperator("*", this.multiplication, "infix",   4);
+        this.defineOperator("/", this.division,       "infix",   4);
+        this.defineOperator("+", this.last,           "prefix",  3);
+        this.defineOperator("-", this.negation,       "prefix",  3);
+        this.defineOperator("+", this.addition,       "infix",   2);
+        this.defineOperator("-", this.subtraction,    "infix",   2);
+        this.defineOperator(",", Array.of,            "infix",   1);
+        this.defineOperator("(", this.last,           "prefix");
+        this.defineOperator(")", null,                "postfix");
+        this.defineOperator("min", Math.min);
+        this.defineOperator("sqrt", Math.sqrt);
+    }
+    // Method allowing to extend an instance with more operators and functions:
+    defineOperator(symbol, f, notation = "func", precedence = 0, rightToLeft = false) {
+        // Store operators keyed by their symbol/name. Some symbols may represent
+        // different usages: e.g. "-" can be unary or binary, so they are also
+        // keyed by their notation (prefix, infix, postfix, func):
+        if (notation === "func") precedence = 0;
+        this._symbols[symbol] = Object.assign({}, this._symbols[symbol], {
+            [notation]: {
+                symbol, f, notation, precedence, rightToLeft, 
+                argCount: 1 + (notation === "infix")
+            },
+            symbol,
+            regSymbol: symbol.replace(/[\\^$*+?.()|[\]{}]/g, '\\$&')
+                + (/\w$/.test(symbol) ? "\\b" : "") // add a break if it's a name 
+        });
+    }
+    last(...a)           { return a[a.length-1] }
+    negation(a)          { return -a }
+    addition(a, b)       { return a + b }
+    subtraction(a, b)    { return a - b }
+    multiplication(a, b) { return a * b }
+    division(a, b)       { return a / b }
+    factorial(a) {
+        if (a%1 || !(+a>=0)) return NaN
+        if (a > 170) return Infinity;
+        let b = 1;
+        while (a > 1) b *= a--;
+        return b;
+    }
+    static get(s) {
+        const calculator = new Calculation()
+        return calculator.calculate(s)
+    }
+    calculate(expression) {
+        let match;
+        const values = [],
+            operators = [this._symbols["("].prefix],
+            exec = _ => {
+                let op = operators.pop();
+                values.push(op.f(...[].concat(...values.splice(-op.argCount))));
+                return op.precedence;
+            },
+            error = msg => {
+                let notation = match ? match.index : expression.length;
+                return `${msg} at ${notation}:\n${expression}\n${' '.repeat(notation)}^`;
+            },
+            pattern = new RegExp(
+                // Pattern for numbers
+                "\\d+(?:\\.\\d+)?|" 
+                // ...and patterns for individual operators/function names
+                + Object.values(this._symbols)
+                        // longer symbols should be listed first
+                        .sort( (a, b) => b.symbol.length - a.symbol.length ) 
+                        .map( val => val.regSymbol ).join('|')
+                + "|(\\S)", "g"
+            );
+        let afterValue = false;
+        pattern.lastIndex = 0; // Reset regular expression object
+        do {
+            match = pattern.exec(expression);
+            const [token, bad] = match || [")", undefined],
+                notNumber = this._symbols[token],
+                notNewValue = notNumber && !notNumber.prefix && !notNumber.func,
+                notAfterValue = !notNumber || !notNumber.postfix && !notNumber.infix;
+            // Check for syntax errors:
+            if (bad || (afterValue ? notAfterValue : notNewValue)) return error("Syntax error");
+            if (afterValue) {
+                // We either have an infix or postfix operator (they should be mutually exclusive)
+                const curr = notNumber.postfix || notNumber.infix;
+                do {
+                    const prev = operators[operators.length-1];
+                    if (((curr.precedence - prev.precedence) || prev.rightToLeft) > 0) break; 
+                    // Apply previous operator, since it has precedence over current one
+                } while (exec()); // Exit loop after executing an opening parenthesis or function
+                afterValue = curr.notation === "postfix";
+                if (curr.symbol !== ")") {
+                    operators.push(curr);
+                    // Postfix always has precedence over any operator that follows after it
+                    if (afterValue) exec();
+                }
+            } else if (notNumber) { // prefix operator or function
+                operators.push(notNumber.prefix || notNumber.func);
+                if (notNumber.func) { // Require an opening parenthesis
+                    match = pattern.exec(expression);
+                    if (!match || match[0] !== "(") return error("Function needs parentheses")
+                }
+            } else { // number
+                values.push(+token);
+                afterValue = true;
+            }
+        } while (match && operators.length);
+        return operators.length ? error("Missing closing parenthesis")
+                : match ? error("Too many closing parentheses")
+                : values.pop() // All done!
+    }
+}
+
+
 s310121114002 = `
 r.js is there a way to calculate large numbers without rounding  i wd lk 2 calculate 21^21. the problem is that the answer is 5.842587018385982e+27. I'm hoping to get the entire number, as a whole number without the e27 truncation. Is there a way of doing thisqm
 
@@ -23232,7 +23622,6 @@ function templater2(s) {
 }
 // console.log(findall(inbetweenRE, s040221105118))
 
-// console.log( quotesForArrayItemsParser('hi john  bye sam' ))
 // console.log( templater('%1. how r u today %2. im great' ))
 
 
@@ -24275,6 +24664,14 @@ class vuelines extends LineEdit2 {
             template = this.text
         }
 
+        this.value = {
+            template: this.text,
+            js: js,
+            css: cssChunks,
+            libraries,
+        }
+        return
+
         // console.error( store.use )
         this.value = html99({
             css: cssChunks,
@@ -24786,6 +25183,7 @@ function lineLogger(...log) {
 
 
 function shapeParser(original, spaces, shape, size, rest) {
+    // console.blue( arguments )
     if (shape == 'box') shape = 'square'
     let attrs = []
     if (!size) {
@@ -24797,48 +25195,21 @@ function shapeParser(original, spaces, shape, size, rest) {
     if (shape == 'circle') {
         attrs.push('br50p')
     }
-    // console.red( attrs )
-    // console.log( spaces, attrs )
-    // console.log( attrs, rest )
     return spaces + 'div ' + toString(attrs, ' ') + ' ' + rest.trim() + ''
 }
 function cssrep(s) {
     const dict = {
         '^( *)(square|circle|box)(\\d*)(.*)': shapeParser,
+        '^pv (\\w+)': (_, s) => 'p ' + s + ': ' + '4' + s,
     }
     return frep(s, dict)
 }
 function prepareVue(s) {
-    const dict = {
-        cont: 'container',
-        '(?<=\\s)cmtextarea(?=\\s)': 'textarea ref=codemirror',
-        '(?<=\\s|\\.)cm(?=\\s)': 'CodeMirror',
-        ct: 'container',
-        sent: 'sentence',
-        cls: 'class',
-        lst: 'list',
-        ' gt ': ' > ',
-        ' lt ': ' < ',
-        'qm\\b': '?',
-        ';': ':',
-        '`': '~',
-        '^33': '##',
-        '(?<=[a-z][a-z])1\\b': '!',
-        '(?<=[a-z][a-z])0(?![a-z])': ')',
-        // '(?<=[a-z][a-z])0\\b': ')',
-        '(?<!he)lp': '(',
-        '(?<![aeiou])rp\\b': ')',
-        '\\b9(?=[a-zA-Z])(?!am)': '(',
-        '\\b3(?=[a-zA-Z])': '#',
-        '\\b4(?!evr|get|got)(?=[a-zA-Z])': '$',
-        '\\b5(?=[a-zA-Z])': '%',
-        '(?<=[^\\d\\s])8(?!\\d)': '*',
-        '^m\\b': 'methods',
-    }
     s = removeDwl(s)                          
     s = LineEdit2.format(s)
     s = cssrep(s)
-    s = drep9002(s, dict)
+    s = drep9002(s, preparevuedict)
+    // console.red( s )
     return s
 }
 
@@ -25663,8 +26034,11 @@ How do I bundle this vue component
 
 function classRunner(classFunction) {
      return (x) => {
+         // console.log( x )
          const product = new classFunction(x)
-         if (product.value) return product.value
+         if (product.value) {
+             return product.value
+         }
      }
 }
 const linetypemap = {
@@ -25676,6 +26050,9 @@ const linetypemap = {
     '(?:def|function|const |let |if \\(|\\w+ =)|{|\\[': 'code',
 }
 class Partitions extends LineEdit2 {
+    format(s) {
+        return (new Partitions(s)).value
+    }
     constructor(s) {
         super(s, {
             track: false, 
@@ -25691,7 +26068,10 @@ class Partitions extends LineEdit2 {
         this.regexes = Object.entries(linetypemap)
         this.run()
         let product = groupTogetherSimple(this.lines, this.list)
-        this.value = assembly(product)
+
+        this.value = {
+            template: assembly(product)
+        }
         // console.log( product )
     }
 
@@ -25720,10 +26100,6 @@ class Partitions extends LineEdit2 {
 
         this.list[i] = 'prose'
         // console.log( line )
-
-
-
-
     }
 }
 
@@ -25787,11 +26163,17 @@ const markdownmap = {
 }
 //------------------------------
 const GLOBAL_ALIAS_MAP = {
+    w:  'write',
+    s:  'set',
+    e:  'edit',
     as: 'addstyle',
     rs: 'removestyle',
 }
 // 
-function aliaser(map, command) {
+function aliaser(command) {
+    return GLOBAL_ALIAS_MAP[command] || command
+}
+function aliaser2(map, command) {
     return map[command] ? map[command] : map[GLOBAL_ALIAS_MAP[command]]    
 }
 
@@ -25915,14 +26297,14 @@ function groupTogetherSimple(items, keys) {
 }
 function liParser(s) {
     const items = s.split('\n').map(value => divify('li', value))
-    const product = sn + indent(toString(items)) + sn
+    const product = toString(items)
     return divify('ul', product)
 }
 
 function assembly(items) {
     const product = items.reduce((acc, item, i) => {
         if (item.el == 'li') return acc += liParser(item.value) + sn
-        let start = toOpeningTag(item.el, {class:item.class})
+        let start = toOpeningTag(item.el, item.class)
         let middle = item.value
         let end = toClosingTag(item.el)
         return acc += start + middle + end + sn
@@ -26012,7 +26394,6 @@ function groupTogether(items, keys) {
 
 
 
-// reader(classRunner(Partitions))
 // console.log( cssParser2('section lh2' ))
 function cmSetCursorToEnd(cm) {
     cm.setCursor({line: cm.lastLine(), ch: 100})
@@ -26226,7 +26607,7 @@ function getFirstDayOfMonth(day = 0, month, year = getCurrentYear()) {
 
 // console.log( cmTabCompletion(cm()) )
 
-console.log( 'D'.charCodeAt(0))
+// console.log( 'D'.charCodeAt(0))
 // console.log( String.fromCharCode(96))
 // cm deletes from the wrong place.
 
@@ -26290,13 +26671,27 @@ Jason Alan Kilar attended the University of North Carolina for undergraduate, an
 
 // console.log( dobjParser('hi bye  a b fly sigh  ok woka' ))
 
-// console.log('bgred bgblue wh40'
 function cssParser3(s) {
-    // return s.split(' ').map(runCss)
-    return stringReduction(s.split(' ').map(runCss).flat(), {
-        delimiter: ': ',
-        join: '; ',
-    })
+    const store = []
+    const name = []
+    const text = []
+    const items = s.split(' ')
+    let firstCheckPoint = false
+    for (let i = 0; i < items.length; i++) {
+        let item = items[i]
+        let product = runCss(item, false)
+        if (product) {
+            firstCheckPoint = true
+            store.push(product)
+        }
+        else if (firstCheckPoint) {
+            text.push(item)
+        }
+        else {
+            name.push(item)
+        }
+    }
+    return [name.join(' '), store.flat(), text.join(' ')]
 }
 // console.log( cssParser3('monospace code fs16'))
 // edit the function into the dict.
@@ -26338,14 +26733,15 @@ const movementmap = {
     O:   {action: cmToLineTop, mode: 'ENTER-INSERT-MODE'},
 }
 `
-const cdf = "^(?:class|const|(?:async )?function|def) "
 function createDictionary(re, s) {
+    const cdf = "^(?:class|const|(?:async )?function|def) "
+    re = /^ *(\w+): *(?:{\w+: *)?(?:(\(cm\) => .*?|\w+), *(?:$|\w+:))/gm
     const name = search(cdf.slice(1) + '(\\w+)', s)
     const matches = findall(re, s, {sliced: true, filtered: true})
     console.log( brackify('const ' + name + ' =', stringReduction(matches, {delimiter: ': ', join: ',\n'}) ))
 }
 
-// createDictionary(/^ *(\w+): *(?:{\w+: *)?(?:(\(cm\) => .*?|\w+), *(?:$|\w+:))/gm, asdf) // this regex grabs certain things.
+// createDictionary(gm, asdf) // this regex grabs certain things.
 
 
 
@@ -26356,3 +26752,321 @@ https://twitter.com/bencichy/status/1362932982646853634?s=20
 
 
 // i dont think my parents are correct in their assessment that a 'credentialed' path is the only one that works. But it worked for them, so that is what they advertise. 
+
+
+// console.log( undefined === null )
+// console.log( bestText('cl doc.innerHTML'))
+// console.log( createStringDictionary('hi bye' ))
+
+// get hyped get hyped get hyped!
+// it is hard to wrap the idea of how it works.
+// there is ... a lot.
+function getParameters(fn) {
+   const s = fn.toString().match(/\((.*?)\)/)[1]
+   return getWords(s)
+}
+// console.log( getParameters(search ))
+
+const animationmap = {
+    fade: 'o0  01 bgyellow  duration500 times1'
+}
+const numberBoundaryOrColorBoundaryRE = /(?<=\D)(?=\d)|(?<=\d)(?=\D)|(?=red|blue|green|orange|yellow|white|grey|black|pink|brown)/
+const numberBoundaryRE = /(?<=\D)(?=\d)|(?<=\d)(?=\D)/
+function cssformat(s) {
+    let pair = s.split(numberBoundaryOrColorBoundaryRE)
+    return pair.map((el) => mapgetter(el, cssaliasmap))
+}
+function parseAnimationString(s) {
+
+    const keyframes = s.split('  ').map((item, i) => {
+        const object = item.split(' ').reduce((acc, el) => {
+            const product = cssformat(el)
+            if (isArray(product[0])) {
+                acc[product[0][0]] = product[0][1]
+            }
+            else {
+                acc[product[0]] = toNumber(product[1])
+            }
+            return acc
+        }, {})
+
+        return object
+    })
+    // console.log( keyframes )
+
+    if (keyframes.length == 1) {
+        return [keyframes, defaultAnimationOptions]
+    }
+
+    const options = keyframes.pop()
+    return [keyframes, options]
+}
+
+// console.log( parseAnimationString(animationmap['fade'] ))
+
+// we have to play to each of our advantages. For me, I am not good at naming things, which s one of the reasons why I put everything into a single file. it reduces the naming burden.
+
+
+function typedAction(item, things) {
+    const store = []
+    if (isNestedArray(things)) {
+        for (let thing of things) {
+            if (things[0](item)) {
+                const product = things[1](item)
+                if (product) store.push(product)
+            }
+        }
+    }
+    else {
+        for (let i = 0; i < things.length - 1; i++) {
+            if (things[i](item)) {
+                const product = things[i + 1](item)
+                if (product) store.push(product)
+            }
+        }
+    }
+    return store
+}
+function checkElement(el) {
+    const element = document.createElement(el)
+    const storage = SimpleStorage()
+    let destination
+    for (let [k,v] of Object.entries( element )) {
+        typedAction(v, [
+            isString, (x) => destination = 'strings',
+            isFunction, (x) => destination = 'functions',
+        ])
+        store.add(destination, k)
+    }
+    console.string(store.value)
+    return store.value
+}
+
+s = 'p > div.foo ~ p + li bgred'
+s = 'p > div.foo ~ p + li:nth-of-type(1) bgred'
+// runner94(s)
+
+// define kvarray an array that follows the pattern of [ ['a', 'b'], ['c', 'd'] ]. Basically, an array of arrays where each inner array consits of a key-pair value.
+// define key-pair value
+// stringReduction most commonly is used for reducing a kvarray into a string.
+
+
+// you get what the system permits. Dealing with a 20k base in vscode, might be unthinkable. But it is doable in vim, because I am only really exposed to 20 lines at a time. 
+
+// i have pretty opinionated ideas about how a piece of code should look, which might make me micromanage details. 
+
+
+
+
+// The current implementation is not very well done. Of course, it works. But ... a professional will look at it and snort. 
+
+
+// Teachers who did not give spirit. 
+// Stories have a purpose. Rocks have a purpose. They seem useless on first glance. 
+
+
+// Once upon a time, our world was not like this. But we came, and shaped it into our image. Everything that has happened, has happened for a reason. When nothing is special, when everything is destitute, when there is no hope, 
+
+
+// console.log( cssParser3('p > foo.woo ~ p wh40 bgred' ))
+// console.log( arraymaker('hi john  bye sam' ))
+// as the difficulty of the questions increases, the number of available answers decreases. An automation of questions. Use whether or not the question has been liked / seen as a proxy. No fluttery language. 
+
+// console.log(vuelines.format('pv hi\nsquare'))
+
+// console.log(classRunner(Partitions)('hi\nbye'))
+s = '[i]^2/([i]^2-1)'
+// console.log( math.gen3(s) ) // something kind of not wkring here.
+
+const singleFractionRE = /([^\s/]+)\/([^\s/]+)/
+// const singleFractionRE = /[^\s/]+\/[^\s/]+/
+function singleFractionParser(_, a, b) {
+    return parens(a) + '/' + parens(b)
+}
+function mathfix(s) {
+    if (singleFractionRE.test(s)) {
+        return s.replace(singleFractionRE, singleFractionParser)
+    }
+}
+const sampleMathTemplate = 'n^2/n^2-1'
+
+// console.log( Calculation.calculate(math.gen4('a * a', 
+
+const mathTemplateDelimiter = 'a'
+const mathNDelimiter = 'n'
+// const mathNDelimiter = 'n'
+function mathgen4(s, {template = false, start = 1, evaluate = false} = {}) {
+   if (isNumber(evaluate)) {
+        const parser = (...args) => {
+            const [offset, original] = args.slice(-2)
+            if (isNumber(original.charAt(offset - 1))) {
+                return ' * ' + evaluate
+            }
+            return evaluate
+        }
+        s = replace(mathNDelimiter, parser, mathfix(s))
+   }
+
+   else if (template) {
+       template = mathfix(template)
+       const parser = (x) => {
+           return replace(mathNDelimiter, parens(String(start++)), template)
+       }
+
+       s = replace(mathTemplateDelimiter, parser, s)
+   }
+
+   if (evaluate) {
+       const evaluation = Calculation.get(s)
+       console.log(s + ': ' +  evaluation )
+   }
+   return s
+}
+
+// mgen2 and mgen3 are currently not working i assume, due to something on with drep9002. but mathgen4 is absolutely working.
+
+// console.log(math.gen3('2p2p4'))
+//drep9002 has been messed up. It was prone to breaking anyways.
+
+
+// mathgen4('a' + ' * a'.repeat(10), {start: 2, template: sampleMathTemplate, evaluate: true})
+// mathgen4('2n/n+1', {evaluate: 12} )
+
+
+function createArguments(fn, ...args) {
+    const store = []
+    const params = getParameters(fn)
+    console.log( params )
+}
+
+// console.log( createArguments(PersonalAssistant.time ))
+// console.log( createArguments(getFirstDayOfMonth ))
+
+asdf = `
+colonmap = {
+      createpage: (cm) => cm.setValue(createPage.format(cm.getValue())),
+      vuelines: (cm) => cm.setValue(vuelines.format(cm.getValue())),
+      write: (cm, arg) => cm.state.store.add(arg, cm.getValue()),
+      set: (cm, arg) => cm.state.store.set(arg, cm.getValue()),
+      edit: (cm, arg) => cm.setValue(cm.state.store.get(arg)),
+      date: PersonalAssistant.date,
+      time: PersonalAssistant.time,
+      wc:   clipboardWordCount,
+      toframe: (cm) => this.htmlText = cm.getValue(),
+      totext:  (cm) => cm.setValue(this.htmlText),
+      addstyle: (arg) => this.$set(this.styles, ...cssParser3(arg)),
+      removestyle: (arg) => this.$delete(this.styles, arg),
+      style: (cm, arg) => cmEditStyle(cm, arg),
+      dobj : cm => cmEditor(cm, 'DICT-OBJ'),
+      aobj : cm => cmEditor(cm, 'ARRAY-OBJ'),
+      grab:  (cm, arg) => cmGrab(cm, arg),
+      sub:   cmSubmitter,
+      reset: () => {
+          
+      },
+      load: (cm, arg) => {
+          cm.setValue(arg)
+      },
+      merge: (arg) => {
+          const [key, s] = split(arg)
+          const obj = window[key]
+          const data = getLineInfoMAPS(s)
+          mergeInPlace(obj, data)
+      },
+      // cleanup: 
+      //fexec
+      //fcol
+      e: (arg) => this.evalString = evaluator(bestText(arg)),
+      jbin: () => {
+          const [mode, key] = split(arg, {default: ['GET', null]})
+          const value = mode == 'GET' ? null : cm.state.store.get(key)
+`
+// console.log( asdf )
+function textHelper() {
+    const matches = findall(/^ *(\w+):.*?=> +({\n[^]+?    }(?=,)|.+)/gm, asdf)
+    s = ''
+    for (let [a,b] of matches) {
+        if (b.startsWith('{\n')) {
+            b = b.slice(2, -1)
+        }
+        s += 'case ' + quotify(a) + ':\n' + indent((b + sn + 'break'), 4, {mode: 'replace'}) + sn
+    }
+    write('z', indent(s, 8 ))
+}
+
+function electricityBillCalculator({delivery = null, demand = null, hours = 10, per = 'DAY', price = '20', unit = 'CENTS', wattage = 1000} = {}) {
+    if (unit == 'CENTS') price /= 100
+    const amount = 1.5 * wattage * price * hours / 1000
+    console.log( amount )
+}
+// electricityBillCalculator()
+
+// subconsciously, I tend to shape into a certain direction.
+
+
+// s = split(abc, {default: ['a']})
+// console.log( s )
+
+const snippetmap = {
+    'hello': 'function X(X) {\n    X',
+    'a': 'helloooooooooXgoodbyeXhavefunXzeeee/eea\neeeeXeeeee',
+    'red': 'reduce((acc, item, i) => {\n    Y\n}, {})',
+}
+
+        const transformedsnippetmap = transformSnippetMap(snippetmap)
+function transformSnippetMap(snippetmap) {
+    return Object.entries(snippetmap).reduce((acc, [k,v]) => {
+    if (test('Y', v)) {
+        const ch = search('.*?' + 'Y', v).length - 1
+        const sliced = v.slice(0, v.indexOf('Y'))
+        const line = count('\n', sliced)
+        v = v.replace('Y', '')
+        acc[k] = {snippet: v, line, ch}
+    }
+    else {
+        acc[k] = v
+    }
+    return acc
+}, {})
+}
+// console.log( parseAnimationString('bgred easein') )
+// clock(4)
+
+
+// The amount of energy that you can use ... 
+// today was a reasonably productive day ...
+// To take it slowly...
+// It was a pretty big mistake.
+
+async function clocker() {
+    let foo = await sleepclock(3)
+    console.log(foo)
+}
+
+// clocker()
+
+function a1(file) {
+    write('z', console.reverse( read(file)))
+}
+function replaceBetween(a, b, s, replacement) {
+    const regex = a + '[^]+?' + b
+    const product = replace(regex, (x) => {
+        return replacement
+    }, s, '')
+    return product
+}
+
+function a2(s, content) {
+
+   const a = '(?<=<div id="app".*?>)'
+   const b = '(?=</div>\\s+<script>)'
+   // const a = '<div id="app".*?>'
+   // const b = '</div>(?=\\s+<script>)'
+   const product = replaceBetween(a, b, s, content)
+   return product
+}
+
+// it is not that bad. She is smarter than she looks. You forget that.
+//a1 is a function that performs console.reverse.
+//a2 replaces the inner aspect of a vue.html page with a new div id=app.
+// console.log( a2(text, 'boo' ))

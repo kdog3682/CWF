@@ -1,4 +1,5 @@
 
+from __future__ import unicode_literals
 githubdeletecmd = '''curl -X DELETE -H "Accept: application/vnd.github.v3+json" -H "Authorization: token ${token}" https://api.github.com/repos/${username}/${reponame}'''
 githubItemNameRE = '<span class="css-truncate css-truncate-target d-block width-fit"><a class="js-navigation-open link-gray-dark" title="(.*?)"'
 subredditmap = {
@@ -12,7 +13,7 @@ subredditmap = {
     'nsq': 'nostupidquestions',
     'vue': 'vuejs',
     'py': 'learnpython',
-    'js': 'learnjavascript',
+    'js': 'learnprogramming',
     'eli5': 'eli5',
     'vim': 'vim',
     'css': 'css',
@@ -1639,7 +1640,7 @@ def updir(dir):
 
 
 def isEmpty(x):
-    if isString(x) and not x.trim():
+    if isString(x) and not x.strip():
         return True
     if isArray(x) or isObject(x):
         return not x
@@ -4504,22 +4505,33 @@ def getFiles(
     return files
 
 
+def removeStartingComments(s):
+    items = [
+        "(?:\n *)(?=\n *\n *)",
+        "^//.*",
+    ]
+    return re.sub('|'.join(items), '', s, flags=re.M)
+
+def isPureString(x):
+    return test('^\w+$', x)
+
 def Regex(x, cat="", capture=False, escape=False, allow="", start="", end="", fallback=None, extend=None):
 
     if isString(x) and not cat:
         return x
 
-    if isEmpty(x):
+    if not x:
         if fallback: return fallback
-        else:
-            raise Exception("cant be empty @regex xx value")
+        else: raise Exception("cant be empty @regex xx value")
 
     if cat == "function-name":
         return cdf + Regex(x, capture=True) + "\\b"
-    elif cat == "function-body":
-        #  regex = "(?:^|(?<=\n))" + cdf[1:] + Regex(x) + "\\b[\w\W]+?(?=\n\w|$)"
-        regex = "(?<=^|\n)" + cdf[1:] + Regex(x) + "\\b[\w\W]+?(?=\n\w|$)"
-        return regex
+
+    if cat == "function-body":
+        if isPureString(x):
+            x = '.*?' + x + '.*?'
+        return "(?<=^|\n)" + cdf[1:] + Regex(x) + "\\b[\w\W]+?(?=\n[\w<]|$)"
+
     if cat == "vue-method-name":
         return "^        " + Regex(x) + "(?:,\n|\([\w\W]+?\n        },?\n)"
     if cat == "vue":
@@ -7070,11 +7082,12 @@ def revert(x):
 
 def copyFile(file, destination=None):
     file = os.path.expanduser(file)
-    to = (
+    to = expandUser(
         os.path.join(destination, os.path.basename(file))
         if destination
         else file + "copy"
     )
+
     if isFile(to):
         print(  'Shutil: File exists. Overwriting with shutil.copy'  )
         shutil.copy(file, to)
@@ -8946,8 +8959,38 @@ class Github:
     def post(repo, file, content=None, append=True):
         Github(repo=repo).upload({file : content}, append=append)
 
+    def update(self, data):
+        if isObject(data):
+            self.addObject(data)
+        else:
+            self.add(data)
+        
+        self.commit()
+        
+    def addObject(self, data):
+        for k,v in data.items():
+            if not v: continue
+            path = os.path.join(self.dir, k)
+            write(path, v, append = self.append)
+            self.add(path)
+
+    def submit(self, data):
+        for item in data:
+            if isObject(item):
+                for k,v in item.items():
+                    path = os.path.join(self.dir, dir, k)
+                    if isDefined(v):
+                        write(path, v, append = self.append)
+                        self.add(path)
+
+            if isString(item):
+                copyFile(self.pathfix(item), self.dir)
+                self.add(path)
+
+        self.commit()
+        
     @staticmethod
-    def update(repo, content=None, css=None, js=None, append=False):
+    def staticUpdate(repo, content=None, css=None, js=None, append=False):
         Github(repo=repo).upload({'index.html': content, 'styles.css': css, 'script.js': js}, append=False)
 
     @staticmethod
@@ -9202,6 +9245,7 @@ class Github:
         self.commit()
 
     def add(self, *items):
+        items = normalizer(items)
         statement = 'git add ' + (' '.join(items) if items else '.')
         self.args.append(statement)
 
@@ -9214,11 +9258,12 @@ class Github:
         self.setDirectoryAndRepo(repo)
         return self
 
-    def __init__(self, repo = 'BACKUP', user = 'kdog3682', token = ENV_GITHUB_TOKEN):
+    def __init__(self, repo = 'BACKUP', user = 'kdog3682', token = ENV_GITHUB_TOKEN, append=False):
         repo = Github.aliasmap.get(repo, repo)
         self.startingDirectory = abspath(os.getcwd())
         print(  'startingDir: ', self.startingDirectory  )
         self.user = user
+        self.append = append
         self.token = token
         self.args = []
         self.setDirectoryAndRepo(repo)
@@ -9879,21 +9924,17 @@ def commentBox(message="", file=__file__):
         message = " : " + message
     return comment(fullDateStamp() + message, getExtension(file), border=True)
 
-
-
-def transferFunctions(names, frompath = 'archive3.py', topath = 'utils.py', delete=False):
+def transferFunctions(names = 'cm', frompath = 'utils.js', topath = 'methods.js', delete=True, cleaner = None):
     regex = Regex(names, "function-body")
-
-    def parser(x):
-        return ["", x.group(0)]
-
+    parser = lambda x: ["", x.group(0)]
     original, store = mrep2(regex, parser, read(frompath), flags=re.I)
-    store.insert(0, commentBox("transfer functions start", topath))
-    store.append(commentBox("transfer functions end", topath))
+    #  original = removeStartingComments(original)
+    #  original = re.sub('    new Vue[\w\W]+?}.*?"#app"\)', lambda x: dedent(x.group(0)), original)
+    #  original = cleaner(original, objectCleaner)
 
-    if delete:
-        write(frompath, original)
-    prepend(topath, store)
+    tl(store)
+    if delete: write(frompath, original)
+    append(topath, store)
 
 
 def sum(a, b):
@@ -13208,36 +13249,192 @@ I've also seen, '$$1' and '$$2' used quite frequently. Is there an implicit mean
 ap ELI5 - What is a simple explanation for how a recursive descent parser works?
 
 
+@learnprogramming Is it okay to re-use a variable like this, or should intermediate constants be assigned?
 
-I've been reading about ways to parse strings, and came across 'recursie descent-parser.' 
+        if (value) {
+            if (isPrimitive(value)) {
+                value = {value}
+            }
+            if (meta) {
+                value = {
+                    meta: {
+                        timeStamp: datestamp(Number),
+                    }
+                    value: value
+                }
+            }
+            value = JSON.stringify(value)
+        }
 
 
+@learnprogramming Might there be a way to expand this pattern to n-checkpoints?
 
-js How do you create or manage aliases for your dictionaries?
-
-    function aliaser(dict, key) {
-        return dict[key] ? dict[key] : dict[GLOBAL_ALIAS_MAP[key]]    
+    firstCheckpoint = false
+    secondCheckpoint = false
+    first = []
+    second = []
+    for (let i = 0; i < items.length; i++) {
+        let product = parse(items[i])
+        if (product) {
+            firstCheckPoint = true
+            first.push(product)
+        }
+        else if (firstCheckPoint) {
+            secondCheckPoint = true
+            second.push(item)
+        }
+        else {
+            name.push(item)
+        }
     }
 
-Currently, I'm using the above function to manage my aliases. Basically, if a dict doesnt have a key in it, aliaser checks if the global alias map's version of the key works. And then it returns that.
+Currently, the pattern shows for 2 checkpoints. I'm wondering if there might be a neat way of extrapolating this pattern to many more checkpoints, without having to write in code, which I think would be very repetitive.
 
-The alternative that I've been using to this, is to just hardcode items. For example:
-    dict = {
-        jon: Jonathan,
-        john: Jonathan,
-        jonny: Jonathan,
+Thanks!
+
+@ap how does the browser cache resources which it has previously seen?
+
+Scenario A: 3 different websites all use the same library. However, each website uses a different link to the library. Will the browser recognize, that it has already downloaded the resource? Will subsequent page loads be faster?
+
+Scenario B: I download the library locally and use it in my index.html. Next, I go into the library and add a function foo = (x) => console.log('hi'). This function is appended to the start of where the library begins. Does adding this item, cause the browser to need to recompile the library from scratch?
+
+@physics How do you calculate an electricity bill?
+
+I recieved an overwhelming electricity bill this month, and I am trying to figure out how it is calculated. 
+
+* 1 KWH = 17.6 cents (according to the electricity bill)
+* I'm using a Presto SpaceHeater which is listed as 1000W, and 105V.
+
+1000W for 1 hour should equal 1 KWH which equals 17.6 cents? 
+
+But this seems way too low. Does the 105V voltage also need to be taken into account?
+
+My bill came out to be around 250 dollars. (The actual bill is higher, but 250, is the delta difference from what last month was, and what this month was, and I attribute it to using a new space heater)
+
+Rounding 1 hour KWH to 20 cents, and assuming a use of 20 hours a day, that is 4 dollars per day. Times 1 month it comes out to 4 * 30 = 120 dollars. 
+
+This is still way short of the 250 bill. 
+
+Appreciate any advice you guys can give in where I might've gone wrong in these calculations.
+
+
+
+
+js how does the browser cache resources?
+
+Here are 3 different links which each point to the same resource:
+*
+*
+*
+
+Question 1 - 
+Question 2 - 
+// the source files are packaged together into a large file.
+// but for me, it is comfortable to have everything in a single file.
+// Hmm. They have a point.
+// To offer the services at a much discounted price. 
+// Asking questions there isn't fun anymore. Asking in vuejs. "You will know when you need it." Criticism. Of how I am doing things. 
+
+// A man plays a different role.
+// Many generations of people not having values. 
+// Taking pity ... 
+// I have not much to say to my dad. He is smart, but he doesn't have the same priorities. Making the same mistake over and over. 
+
+
+
+
+ap What are things that you have seen other coders do, that make you shake your head?
+
+@learnprogramming What are some things that beginner coders might do (and should avoid) , that more experienced coders would scold / chatise them for?
+
+
+How do you compile a website which has imports / exports? 
+
+    ---- index.html ----
+    <script src='script.js'></script>
+    <p>hello world</p>
+
+    ---- script.js ----
+    import foo from './utils.js'
+    console.log(foo)
+
+    ---- utils.js ----
+    export const foo = 'foo'
+
+When I look at github repos, it often looks like the above snippet, except a bit more complicated, with lots of files/functions, being imported and exported. I'm wondering, how do they build their final website?
+
+Many times I will see a repo on Github for a website, and I will want to play around with the website, but I don't know how to compile it. I end up resorting todownloading all of the files, removing all of the import and export tags, and then copying and pasting everything into a single html file. 
+
+For example, if I were to 'hand-compile' the above snippet by copy and pasting, it would become something like this:
+    ----index.html----
+    <p>hello world</p>
+    <script>
+        const foo = 'foo'
+        console.log(foo)
+    </script>
+
+I'm sure there must be a better way.
+
+Online advice will often write, 'use gulp/browserify/commonjs/require/webpack/grunt'... but for a beginner, reading those docs and trying to figure them out, is not easy. I'm not sure where to begin, and downloading all of those npm packages is daunting.
+
+Really appreciate any help with this! It is something I have been trying to do for a long time now. 
+
+vue
+
+
+
+
+js how can i organize my file contents so that it will be easier for others to read 
+i have a large js file with utilities, helpers, and main functions all mixed together. Main functions are functions that should be their own file.
+
+The first step of this task I'm pretty sure is to get a list of the main functions. These will each become their own file.
+
+The second step is to import dependencies for each main function.
+
+// html and css (including generators)
+// organization
+// general utilities
+// math
+// generators
+
+Would you choose version 1 or version 2?
+
+Nesting of Status Objects:
+
+1:
+    data() {
+        return {
+            status: {
+                'warning': false,
+                'active' : true,
+            }
+        }
     }
 
-With the aliasmap, it would be written as:
+2
 
-    dict = {
-        john: Jonathan
+    data() {
+        return {
+            warningStatus: false
+            activeStatus: true,
+        }
     }
 
-    aliasmap = {
-        jon: john,
-        jonny: john,
-    }
+
+
+`
+
+js one async function is causing a cascade of many other functions to have to be rewritten as async as well. Do you think async should be used in this case?
+
+A function 'executeCommand' is a controller for various functions. One of these functions, is an async function. 
+
+To make it work, executeCommand would have to be written as async as well. However, there are many functions which call executeCommand, which means those functions also have to be molded into async.
+
+I am wondering if it is a good idea to accomodate the minority of functions which are async with the async/await syntax.
+
+The alternative is to simply keep everything as sync, and use nested callbacks for the minorial functions.
+
+
 
 '''
 #qq
@@ -13415,7 +13612,10 @@ def runnerP(line):
 s = 'the function makes sense'
 #  print(  getTag(s)  )
 
-
+def normalizer(items):
+    if isArray(items) and len(items) == 1 and isArray(items[0]): 
+        return items[0]
+    return items
 
 
 needtocatchthis ='''
@@ -13431,4 +13631,61 @@ fix ff
 '''
 
 
-Github(repo='CWF').updateRepo(*mycwf)
+#  Github(repo='CWF').updateRepo(*mycwf) #works
+
+def downloadSong(*songs):
+    import youtube_dl
+
+
+    ydl_opts = {
+        'format': 'bestaudio/best',
+        'postprocessors': [{
+            'key': 'FFmpegExtractAudio',
+            'preferredcodec': 'mp3',
+            'preferredquality': '192',
+        }],
+    }
+    with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+        ydl.download(songs)
+
+#  downloadSong('https://www.youtube.com/watch?v=trS2nrkN0_k&ab_channel=BlackTech')
+#  cabinet()
+
+
+
+def stuff():
+    parsermap = {
+        '^Vue.(\w+)\(\'(\w+)\'': chunkVueParser,
+    }
+    store = SimpleStorage()
+    for chunk in chunks:
+        for k,v in parsermap.items():
+            match = search(k, chunk)
+            if match:
+                product = v(chunk, *match)
+                store.add(*product)
+        return store.value
+    if chunk.startswith('Vue.'):
+        match = search(regex, chunk)
+        if match:
+            newName = 'vue' + capitalize(type) + capitalize(name)
+            newChunk = re.sub('.*?, (?={)', '', chunk)
+        
+
+def remover(s):
+    return re.sub(regex, '', s, flags=re.M)
+
+def objectCleaner(s):
+    # emptylines | empty functions | commented lines
+    regex = '^ *\n|^ *[\'\"]?\w+[\'\"]?: \(.*?\) => {\s*}, *\n,|^ *//.*'
+    return remover(regex, s)
+
+objectRE = '^(?:const )\w+ = {\n[\w\W]+?\n}'
+
+def cleaner(regex, s, fn):
+    return re.sub(regex, original, lambda x: fn(x.group(0)))
+
+#  transferFunctions('cm')
+#  cabinet('drive')
+#  copyFile('english.js', '~/CWF')
+Github(repo='CWF').update(mycwf)     #this is better

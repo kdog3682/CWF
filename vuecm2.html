@@ -1,562 +1,123 @@
-<script src="./vue.js"></script><script src="./codemirror.js"></script><script src="./utils.js"></script><script src="./methods.js"></script><link rel="stylesheet" type="text/css" href="./codemirror.css"/><link rel="stylesheet" type="text/css" href="./styles.css"/><script>
-const packmap3 = {
-    'mhw': 'cheatatmathhomework',
-    'ebs': 'explainbothsides',
-    'ck': 'cooking',
-    'ap': 'askprogramming',
-    'ljs': 'learnjavascript',
-    'lp': 'learnpython',
-    'me': 'mementomoriok',
-    'nsq': 'nostupidquestions',
-    'vue': 'vuejs',
-    'py': 'learnpython',
-    'js': 'learnjavascript',
-    'eli5': 'eli5',
-    'vim': 'vim',
-    'css': 'css',
+<script src="./vue.js"></script><script src="./codemirror.js"></script><script src="./utils.js"></script><script src="./methods.js"></script><link rel="stylesheet" type="text/css" href="./codemirror.css"/><link rel="stylesheet" type="text/css" href="./styles.css"/><script src="./vcodeframe.js"></script><script>
 
-    'f': foo,
-    'function',
+function toggleFrame() {
+    console.log( 'toggling the frame' )
+    // this.isIframe = !this.isIframe
+    // to have made a mistake ... a costly mistake.
+    // i speak a certain way.
+    // money is just money. 
+    // an expensive mistake. 
+    // Good morning. I am not the primary account holder.
 }
-console.log( 'asdfasdf' )
+createElement('style', fadestring, cssreset)
 
-
+function revertCodeMirror() {
+    this.computedHtml = ''
+    setTimeout(() => this.codemirror.focus(), 250)
+}
 
 </script>
 
-
-<div id="app">
+<div id="app" @keyup.ctrl.enter.prevent="toggleFrame">
     <component is="style">{{computedStyleString}}</component>
-    <p class="foo"> normalString: {{ normalString }}</p>
-    <p> insertString: {{ insertString }}</p>
-    <p> insertMode: {{ insertMode }}</p>
-    <p> isColon: {{ isColon }}</p>
+    
+    <section v-show="computedHtml">
+    <p>codeframe</p>
+    <codeframe @close="revertCodeMirror"  :mount-count="mountCount" :computed-html="computedHtml"/>
+    </section>
+    <div v-show = "!computedHtml">
 
-    <div style="background-color: #f56565; padding-left: 40px; padding-right: 20px">
         <textarea ref="codemirror"></textarea>
-        <div>do u like to eat</div>
-        <p>i love to eat</p>
+        <section v-show="displayEvalStore" a=component>
+        <h2>Eval Items</h2>        
+        <ul>
+            <li v-for="item in evalStore">{{item}}</li>
+        </ul>
+        </section>
+
+        <p @click="displayString = ''"> displayString: {{ displayString }}</p>
+        <p @click="normalString = 'hii'"> normalString: {{ normalString }}</p>
+        <p> insertString: {{ insertString }}</p>
+        <p> insertMode: {{ insertMode }}</p>
+        <p> isColon: {{ isColon }}</p>
+        <p v-show="htmlString"> {{htmlString}}</p>
+        <p v-show="jsString"> {{jsString}}</p>
+        <p v-show="cssString"> {{cssString}}</p>
+        <p> evalString: {{ evalString }}</p>
+        <p style="font-family: monospace;">{{ computedHtml }}</p>
+
+    <!-- component -->
+    <div style="height: 100">
+    <transition name="fade">
+        <div v-show="computedOption">
+            <button @click="buttonHandler(computedOption, button)" v-for="button in buttonOptions[computedOption]">
+                {{button}}
+            </button>
+        </div>
+    </transition>
+    </div>
+
+
     </div>
 </div>
+
 
 <script>
 
 const Pos = CodeMirror.Pos
-function cmToLineTop(cm) {
-    const {spaces, lineNumber} = cminfo(cm)
-    cm.operation(() => {
-        cm.replaceRange(spaces + sn, Pos(lineNumber, 0))
-        cmCursor(cm, (ch, line) => Pos(line - 1, 1000))
-    })
-}
-function cmToLineBottom(cm) {
-    const {spaces, lineNumber, line, mode} = cminfo(cm)
-    const extraSpaces = line.endsWith(getBlockDelimiter(mode, true)) ? '    ':''
-
-    cm.operation(() => {
-        cmCursor(cm, 'LINE-END')
-        cm.replaceRange('\n' + spaces + extraSpaces, Pos(lineNumber, 1000))
-    })
-}
-
-const DEFAULT_BUFFER = 'cwf'
-const SNIPPET_BUFFER = 'snippets'
-const BUFFERS = [DEFAULT_BUFFER, SNIPPET_BUFFER]
-
-
-    const irm = {
-        'ff' : 'function',
-        'foo': 'asdasjdas',
-        'boo': 'zzz',
-    }
-function inoremapHandlerOLD(cm) {
-    console.log( 'inoremap' )
-    const inoremapReplacementMap = {
-        'foo': 'asdasjdas',
-        'boo': 'zzz',
-    }
-
-    const match = inoremapReplacementMap[this.insertString.trim()]
-    if (match) {
-        console.log( 'replacing word' )
-        cmReplaceWord(cm, this.insertString, match)
-        this.insertString = ''
-        return true
-    }
-}
-
-function inoremapHandler(cm) {
-    console.log( 'inoremap' )
-    const inoremapReplacementMap = {
-        'foo': 'asdasjdas',
-        'boo': 'zzz',
-    }
-
-    const match = inoremapReplacementMap[cm.state.lastWord]
-    if (match) {
-        console.log( 'replacing word' )
-        cmReplaceWord(cm, cm.state.lastWord, match)
-        cm.state.lastWord = ''
-        return true
-    }
-}
-
-function cmRangeHelper99(cm, {mode = null, word = null}) {
-    if (isString(arguments[1])) {
-        mode = arguments[1]
-    }
-
-    const cursor = cm.getCursor(cm)
-    if (mode == 'deleteFromCursorBackwards') {
-        return [{line: cursor.line, ch: cursor.ch - word.length + 1}, cursor]
-    }
-
-    if (mode == 'deleteLineToPreviousEnd') {
-        return [
-            {line: cursor.line - 1, ch: 1000}, 
-            {line: cursor.line, ch: 1000},
-        ]
-    }
-}
-function cmReplaceWord(cm, word, replacement) {
-    // const range = cm.findWordAt(cm.getCursor())
-    // const word = cm.getRange(range.anchor, range.head)
-    cm.replaceRange(replacement, ...cmRangeHelper99(cm, {
-        mode: 'deleteFromCursorBackwards',
-        word: word,
-    }))
-         
-}
-function cmAddClass(cm, classString) {
-    CodeMirror.addClass(cm.getWrapperElement(), classString)
-}
-
-function cmgetter(cm, ...queries) {
-    const cursor = cm.getCursor()
-    return smallify(queries.map(runner))
-
-    function runner(query) {
-    switch(query) {
-        case 'spaces': return cm.getLine(cursor.line).match(/^ */)[0]
-        case 'indent': return cm.getLine(cursor.line).match(/^ */)[0].length
-        case 'mode':   return cm.getOption('mode') || 'javascript'
-
-        case 'SPACES': return cm.getLine(cursor.line).match(/^ */)[0]
-        case 'INDENT': return cm.getLine(cursor.line).match(/^ */)[0].length
-        case 'MODE':   return cm.getOption('mode') || 'javascript'
-
-        case 'UPLINE': return cm.getLine(cursor.line - 1) || ''
-        case 'LINE':   return cm.getLine(cursor.line) || ''
-        case 'LINE-TRIM':   return cm.getLine(cursor.line).trim() || ''
-        case 'BLOCK':  return cmSprawlRange(cm)
-        case 'CURSOR': return cursor
-        case 'LINE-NUMBER': return cursor.line
-        case 'CHAR-NUMBER': return cursor.ch
-        case 'LAST-WORD': return search(/\S+$/, cm.getLine(cursor.line))
-    }
-    }
-}
-
-function cmSnippetReplacement(cm, range, content) {
-    console.log( visible2(content) )
-    let delimiterIndex = content.search(RegExp(snippetDelimiter))
-    cm.state.extraSnippetSpaces = 0
-
-    content = content.replace(RegExp(snippetDelimiter, 'g'), '')
-
-    if (content.includes('\n')) {
-        const currentIndentation = cmgetter(cm, 'indent')
-        cm.state.extraSnippetSpaces += currentIndentation
-        content = indent(content, currentIndentation, {mode: 'skipFirstLine'})
-    }
-
-    cm.operation(() => {
-        cm.replaceRange(content, range.anchor, range.head)
-        cm.setCursor(range.anchor.line, range.anchor.ch + delimiterIndex)
-    })
-}
-const snippetmap = {
-    'hello': 'function X(X) {\n    X',
-    'a': 'helloooooooooXgoodbyeXhavefunXzeeee/eea\neeeeXeeeee'
-}
-
-function createEvent({event = 'keydown', key = 'm'} = {}) {
-    var event = document.createEvent( 'KeyboardEvent' );
-    event.initKeyboardEvent(
-                 "keypress",        //  the kind of event
-                  true,             //  boolean "can it bubble?"
-                  true,             //  boolean "can it be cancelled?"
-                  null,             //  specifies the view context 
-                  false,            //  boolean "Ctrl key?"
-                  false,            //  boolean "Alt key?"
-                  false,            //  Boolean "Shift key?"
-                  false,            //  Boolean "Meta key?"
-                   40,             //  the keyCode
-                   0,               //  default
-    );
-
-    console.log( event )
-    document.dispatchEvent( event );
-}
-const hello = 'hello'
-const fooFunction = 'function foo90 {\n    ret x'
 CodeMirror.commands.selectAll = null
+// createElement('style', fadestring + snsn + opacitykfstring)
+
+Vue.directive('animate', (el, binding) => {
+    console.string(binding  )
+    animateElement(el, 'fade')
+})
 
 
 
-function sleep(ms = 3000) {
-    if (ms < 10) ms *= 1000
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            console.log('finished sleep')
-            resolve()
-        }, ms)
-    })
-}
-async function cmOperationAsync2(cm, frames, offsets = null) {
-    if (!exists(frames)) return
-    if (!frames[0]) return
-    offsets = frames.map(frame => {
-        const delay = frame ? 1000 : 2000 
-        // if the frame DNE, the delay is longer at 2000. This is a quick way to introduce delays.
-        return {preDelay: delay}
-    })
-    for (let i = 0; i < frames.length; i++) {
-        if (offsets[i].preDelay) {
-            await sleep(offsets[i].preDelay)
-        }
-
-        if (frames[i]) frames[i](cm)
-
-        if (i < frames.length - 1 && offsets[i].postDelay) {
-            console.log( 'offset', i )
-            await sleep(offsets[i].postDelay)
-        }
-    }
-}
-
-async function cmOperationAsync(cm, frames) {
-    for (let frame of frames) {
-        if (frame.before) await sleep(frame.before)
-        frame.r(cm)
-        if (frame.d) await sleep(frame.d)
-    }
-}
-
-function cmOperation(cm, actions) {
-    cm.operation(cm => {
-        for (let action of actions) {
-            action(cm)
-        }
-    })
-}
-function cmDeleteLastWord(cm) {
-    const [cursor, line] = cmgetter(cm, 'CURSOR', 'LINE')
-
-    if (cursor.ch == 0) {
-        cm.replaceRange('', ...cmRangeHelper99(cm, 'deleteLineToPreviousEnd'))
-    }
-
-    else if (line[cursor.ch - 1] == ' ' && line[cursor.ch -2] == ' ') {
-        cm.replaceRange('', Pos(cursor.line, cursor.ch - 4), cursor)
-    }
-
-    else {
-        const word = cm.findWordAt(cursor)
-
-        // if (word.anchor.ch == cursor.ch) {
-            // cm.replaceRange('', Pos(cursor.line, cursor.ch - 1), cursor)
-            // return
-        // }
-
-        const text = cm.getRange(word.anchor, word.head)
-        const replacement = text.trim() == '' ? text.slice(4) : ''
-        cm.replaceRange(replacement, word.anchor, word.head)
-    }
-}
-
-const spell = {
-    deleteLastWord(s) {
-        const regex = /(?: {1,4}|\w+|[^\w ]+)$/
-        return s.replace(regex, '')
-    },
-}
-const defaultOptions = {
-  cutoff: 50
-};
-
-//ScriptStuff
-
-
-function isFunction(o) {
-    return Object.prototype.toString.call(o).slice(8, -1).toLowerCase() === 'function'
-}
-
-function cmDeleteLine(cm) {
-    cm.replaceRange('', ...cmRangeHelper99(cm, 'deleteLineToPreviousEnd'))
-}
- 
-const movementmap = {
-    gg: (cm) => cmCursor(cm, 'DOCUMENT-START'),
-    G: (cm) => cmCursor(cm, 'DOCUMENT-END'),
-    A: (cm) => cmCursor(cm, 'LINE-END'),
-    o: cmToLineBottom,
-    O: cmToLineTop,
-}
-Vue.prototype.catchallmodmap = {
-// Vue.prototype.insertmodmap = {
-            '11097': (cm) => cm.setValue(''),
-            '12097': (cm) => {updateClipboard(cm.getValue()); cm.setValue('');},
-            '13097': () => console.log( 'zzzz22' ),
-            '12108': () => console.log( 'zzzzaa' ),
-// }
-// Vue.prototype.normalmodmap = {
-    gg:  (cm) => cmCursor(cm, 'DOCUMENT-START'),
-    G:   (cm) => cmCursor(cm, 'DOCUMENT-END'),
-    A:   {action: (cm) => cmCursor(cm, 'LINE-END'), mode: 'ENTER-INSERT-MODE'},
-    o:   {action: cmToLineBottom, mode: 'ENTER-INSERT-MODE'},
-    O:   {action: cmToLineTop, mode: 'ENTER-INSERT-MODE'},
-    A:   {action: (cm) => cmCursor(cm, 'LINE-END'), mode: 'ENTER-INSERT-MODE'},
-
-    su:  (cm) => speak(cmgetter(cm, 'UPLINE')),
-    sl:  (cm) => speak(cmgetter(cm, 'LINE')),
-    sb:  (cm) => speak(cmgetter(cm, 'BLOCK')),
-    sc:  (cm) => speak(cmgetter(cm, 'CURSOR')),
-
-    f: cmDeleteLine,
-    u: (cm) => cm.undo(),
-    r: (cm) => cm.redo(),
-
-    // ab: [
-        // (cm) => console.log('1'),
-        // (cm) => console.log('12'),
-        // (cm) => console.log('123'),
-    // ]
-}
-
-Vue.prototype.primaryMap = {
-    // 'Backspace': '',
-    'ShiftRight': cmToggleBuffer,
-    // 'ShiftLeft': '',
-    'Tab':       {action: cmTabCompletion, preventDefault: true},
-    'ControlRight': exitBlock,
-    'AltRight':  enterBlock,
-    'Backspace': backspaceHandler,
-    // 'Semicolon':  {action: colonKeyHandler, preventDefault: true},
-    'Escape': escapeKeyHandler,
-    'Enter': enterKeyHandler,
-    'KeyI' : {action: keyIHandler}
-    // 'KeyA' : {action: keyAHandler}
-}
-
-
-    new Vue({
-        data() {
-            return {
-                boo: 'zoo',
-                message: 'hi',
-                    insertMode: true,
-                    insertString: '',
-                    normalString: '',
-                    snippetString: '',
-                    // styleString: 'body { background: yellow }',
-                    styles: {},
-                    //fdata,
-                    color: 'yellow',
-                    appMode: 'DEFAULT',
-                    tabCount: 0,
-                    isColon: false,
-            }
-        },
-        
-        watch: {
-            yoo() {
-                return x
-            }
-        },
-        
-        computed: {
-            computedStyleString() {
-                return Object.values(this.styles).join(snsn)
-            }
-        },
-        methods: {
-            //fmet
-            blurHandler,
-            focusHandler,
-            previewItems,
-            keyIHandler,
-            inoremapHandler,
-            primaryFirstAction,
-            cmWriteFactory,
-            enterInsertMode,
-            enterBlock,
-            exitBlock,
-            backspaceHandler,
-            colonKeyHandler,
-            enterVimMode,
-            escapeKeyHandler, 
-            enterKeyHandler,
-            executeColonCommand,
-            primaryKeyHandler,
-        },
-        
-        async mounted() {
-            this.codemirror = CodeMirror.fromTextArea(this.$refs.codemirror, {
-                pollInterval: 10000,
-                lineWrapping: true,
-                lineNumber: true,
-                autofocus: true,
-                cursorBlinkRate: 0,
-                value: 'hello world', 
-                mode: 'javascript',
-                tabWidth: 4,
-            })
-            window.addEventListener('blur', this.blurHandler)
-            window.addEventListener('focus', this.focusHandler)
-            this.codemirror.on('keydown', this.primaryKeyHandler);
-            cmInitializeBuffers(this.codemirror, BUFFERS)
-
-            // changeIt()
-
-            cmAddClass(this.codemirror, 'cm-fat-cursor')
-
-            cmOperationAsync2(this.codemirror, [
-                // null,
-                // this.cmWriteFactory(fooFunction),
-                // this.exitBlock,
-                // null,
-                // this.cmWriteFactory(hello),
-                // this.cmWriteFactory('    f' + hello),
-                // cmTabCompletion.bind(this)
-                // this.cmWriteFactory('    function foo() {\n        foo = a b c d'),
-                // this.executeColonCommand('dobj', this.codemirror)
-            ])
-            //fmounted
-
-        },
-    }).$mount("#app")
-
-function cmWriteFactory(s) {
-    this.insertString = s
-    return (cm) => cm.replaceSelection(s)
-}
-function primaryFirstAction(cm, e) {
-    const keymap = this.primaryMap[e.code]
-    if (keymap) {
-        if (isFunction(keymap)) {
-            keymap.call(this, cm, e)
-        } else {
-            keymap.action.call(this, cm, e)
-
-            if (keymap.preventDefault) {
-                console.log( 'preventing defualt' )
-                e.preventDefault()
-            }
-        }
-
-        return true // means dont continue with the keytyping.
-    }
-}
-
-const nonLetterKeys = ['Shift', 'ArrowRight', 'ArrowLeft', 'ArrowDown', 'ArrowUp', 'Alt', 'Control', 'Meta']
-function primaryKeyHandler(cm, e) {
-    console.log( cm.state.lastWord )
-
-    if (this.appMode != 'DEFAULT') {
-        return
-    }
-
-    if (this.colonKeyHandler(cm, e)) {
-        return
-    }
-
-    if (this.primaryFirstAction(cm, e)) {
-        return
-    }
-
-    if (nonLetterKeys.includes(e.key)) {
-        return
-    }
-
-    let score = 0
-    if (e.ctrlKey) score += 1000
-    if (e.altKey)  score += 2000
-
-    if (this.insertMode && score < 1000) {
-        this.insertString += e.key
-        
-        e.key == ' ' ? 
-            cm.state.lastWord = '' : 
-            cm.state.lastWord += e.key
-
-        const irm = jspymap['js']['irm']
-        console.blue( cm.state.lastWord )
-        console.log( irm[cm.state.lastWord] )
-        if (cm.state.lastWord.length > 1 && irm[cm.state.lastWord]) {
-            console.log( 'zzzzzzzz' )
-            cmReplaceWord(cm, cm.state.lastWord, irm[cm.state.lastWord])
-            cm.state.lastWord = ''
-            e.preventDefault()
-            return
-        }
-    } 
-
-    else if (!this.insertMode) {
-
-        if (e.key in movementmap) {
-            console.log( 'movementmap' )
-            movementmap[e.key](cm)
-            this.enterKeyHandler(cm, e)
-            return
-        }
-
-        this.normalString += e.key
-    }
-
-    if (this.isColon) {
-        return // happens after all of the normalstrings have been entered.
-    }
-
-    if (this.insertMode) score += e.key.charCodeAt(0) + 10000
-    else if (score) score += this.normalString 
-    else score = this.normalString
-
-
-    const modmap = this.catchallmodmap[score]
-    if (modmap) {
-        if (isFunction(modmap)) {
-            modmap.call(this, cm)
-        }
-        else {
-            modmap.action.call(this, cm)
-            if (modmap.mode == 'ENTER-INSERT-MODE') {
-                this.enterKeyHandler(cm, e)
-            }
-        }
-        
-        if (isNumber(score) && !this.insertMode) this.enterKeyHandler(cm, e)
-        this.normalString = ''
-    }
-    else {
-        console.log( 'hii no match from catchallmodmap' )
-    }
-}
-
-function executeColonCommand(s, cm) {
-    const [command, arg] = split(s) 
-
-    const map = {
-      addstyle: () => this.$set(this.styles,getFirstWord(arg),cssParser2(arg)),
-      removestyle: () => this.$delete(this.styles, arg),
-      style: cm => cmEditStyle(cm, arg),
-      dobj : cm => cmEditor(cm, 'DICT-OBJ'),
-      aobj : cm => cmEditor(cm, 'ARRAY-OBJ'),
-      grab:  cm => cmGrab(cm, arg),
-
+const colonmap = {
+      createpage: (cm) => cm.setValue(createPage.format(cm.getValue())),
+      vuelines: (cm) => cm.setValue(vuelines.format(cm.getValue())),
+      cm: (cm, arg) => cm.state.store.add(arg, cm.getValue()),
+      today: (cm) => updateStorage('today.txt', cm.getValue()),
+      set: (cm, arg) => cm.state.store.set(arg, cm.getValue()),
+      edit: (cm, arg) => cm.setValue(cm.state.store.get(arg)),
       date: PersonalAssistant.date,
       time: PersonalAssistant.time,
       wc:   clipboardWordCount,
+      toframe: (cm) => this.htmlText = cm.getValue(),
+      totext:  (cm) => cm.setValue(this.htmlText),
+      addstyle: (arg) => this.$set(this.styles, ...cssParser3(arg)),
+      removestyle: (arg) => this.$delete(this.styles, arg),
+      style: (cm, arg) => cmEditStyle(cm, arg),
+      dobj : cm => cmEditor(cm, 'DICT-OBJ'),
+      aobj : cm => cmEditor(cm, 'ARRAY-OBJ'),
+      grab:  (cm, arg) => cmGrab(cm, arg),
+      sub:   cmSubmitter,
+      reset: () => {
+          
+      },
+      load: (cm, arg) => {
+          cm.setValue(arg)
+      },
+      merge: (arg) => {
+          const [key, s] = split(arg)
+          const obj = window[key]
+          const data = getLineInfoMAPS(s)
+          mergeInPlace(obj, data)
+      },
+      // cleanup: 
+      //fexec
+      //fcol
+
+      eval: () => this.evalStore = [],
+      e: (arg) => this.evalString = evaluator(bestText(arg)),
+      jbin: (arg) => {
+          const [mode, key] = split(arg, {default: ['GET', null]})
+          const value = mode == 'GET' ? null : cm.state.store.get(key)
+          const promise = jsonbin2({mode, value})
+          this.handlePromise(promise, )
+      },
       postreddit: cm => {
           const promise = jsonbin2({
               mode: 'PUT', 
@@ -567,507 +128,155 @@ function executeColonCommand(s, cm) {
       },
     }
 
-    const action = aliaser(map, command)
-    if (action) {
-        console.log( command, 'the cmd' )
-        isThisFunction(action) ? 
-            action.call(this) :
-            action(cm)
-    }
+function cmTextValue(cm, {lineCount = 3}) {
+    if (count('\n', cm.getValue().trim()) < lineCount) return null
+    return cm.getValue().trim()
 }
-
-function cmEditStyle(cm, s) {
-    const obj = {
-        'css': cssParser3(s)
-        // 'css': cssParser3(cmgetter(cm, 'NORMAL-STRING'))
-    }
-    cm.markText(...cmRangeGetter(cm, 'DOCUMENT'), obj)
-}
-
-
-
-function enterKeyHandler(cm, e) {
-    this.insertString = ''
-
-    if (this.insertMode) {
-        cm.state.tabCount = 0
-        return
-    }
-
-
-    e.preventDefault()
-
-    if (e.key == 'Enter' && e.ctrlKey) {
-        cmSubmitter(cm)
-    }
-
-    if (this.isColon) {
-        this.executeColonCommand(this.normalString, cm)
-        this.isColon = false
-    }
-
-    this.enterInsertMode(cm)
-}
-
-
-function escapeKeyHandler(cm) {
-    if (!this.insertMode) {
-        this.normalString = ''
-        this.isColon = false
-    }
-
-    this.insertMode = false
-    cm.setOption('disableInput', true)
-}
-
-function colonKeyHandler(cm, e) {
-    if (this.isColon) {
-        if (e.code == 'Enter') {
-            this.enterKeyHandler(cm, e)
-        } else if (e.code == 'Backspace') {
-            this.backspaceHandler(cm, e)
-        } else if (e.code == 'Escape') {
-            this.escapeKeyHandler(cm, e)
-        } else if (!nonLetterKeys.includes(e.key)) {
-            this.normalString += e.key
-        }
-        return true
-    }
-
-    else if (e.code == 'Semicolon') {
-        if (e.shiftKey) {
-        this.insertMode = false
-        this.isColon = true
-        cm.setOption('disableInput', true)
-        }
-
-        else {
-            cm.replaceSelection(':')
-        }
-        e.preventDefault()
-        return true
-    }
-
-}
-function enterVimMode() {
-    // not yet
-}
-
-function backspaceHandler(cm, e) {
-    e.preventDefault()
-    if (this.insertMode) {
-        this.insertString = spell.deleteLastWord(this.insertString)
-        cmDeleteLastWord(cm)
-    } else if (this.isColon) {
-        this.normalString = this.normalString.slice(0, -1)
-    } else {
-        this.normalString = spell.deleteLastWord(this.normalString)
-    }
-}
-
-
-
-function enterBlock(cm) {
-    const {line, spaces, mode} = cminfo(cm)
-    const extraSpaces = ' '.repeat(cm.getOption('tabWidth'))
-    cm.replaceSelection(getBlockDelimiter(mode) + '\n' + spaces + extraSpaces)
-}
-
-function exitBlock(cm) {
-    let {line, spaces, mode, tabWidth} = cminfo(cm)
-
-    if (spaces.length < tabWidth) {
-        return
-    }
-
-    spaces = spaces.slice(tabWidth)
-    let exit = spaces + getBlockDelimiter(mode, false) + '\n' + spaces
-
-    if (!exists(line)) {
-        cmReplaceLine(cm, exit)
-    } else {
-        cm.operation(() => {
-            cmCursor(cm, 'LINE-END')
-            cm.replaceSelection('\n' + exit)
-        })
-    }
-}
-
-
-function cmAppendText(cm, content) {
-    cm.replaceRange(content, cm.getCursor())
-}
-
-function cmReplaceLine(cm, content) {
-    const pos = {line: cm.getCursor().line, ch: 0}
-    cm.replaceRange(content, pos)
-}
-
-function getBlockDelimiter(mode, enter = true) {
-    if (mode == 'javascript') 
-        return enter ? ' {' : '}'
-    if (mode == 'python') 
-        return enter ? ':' : ''
-}
-
-function cminfo(cm) {
-    const cursor = cm.getCursor()
-    const mode = cm.getOption('mode') || 'javascript'
-    const tabWidth = cm.getOption('tabWidth') || 4
-    const line = cm.getLine(cursor.line)
-    const spaces = line.match(/^ */)[0]
-    return {
-        tabWidth,
-        spaces,
-        mode,
-        ch:         cursor.ch,
-        lineNumber: cursor.line,
-        line:       line,
-    }
-}
-
-function divify(el, content, attrs) {
-    if (attrs) el += ' '
-    return '<' + el + attrs + '>' + content + '</' + el + '>'
-}
-
-function enterInsertMode(cm) {
-
-    cm.state.tabCount = 0
-    cm.state.lastWord = ''
-    this.normalString = ''
-    this.insertMode = true
-    cm.setOption('disableInput', false)
-}
-
-
-function cmCursor(cm, fn, value = false) {
-    // if (!cm.hasFocus()) cm.focus()
-    const {line, ch} = cm.getCursor()
-
-    switch(fn) {
-        case 'IS-START':
-            return ch === 0
-
-        case 'IS-END':
-            return cm.getLine(line).length == ch
-
-        case 'DOCUMENT-START':
-            a = cm.firstLine()
-            b = 0
-            break
-
-        case 'DOCUMENT-END':
-            a = cm.lastLine()
-            b = 1000
-            break
-
-        case 'LINE-START':
-            a = line
-            b = 0
-            break
-
-        case 'LINE-START-SMART':
-            a = line
-            b = cmgetter(cm, 'indent')
-            break
-
-        case 'LINE-END':
-            a = line
-            b = 1000
-            break
-
-        case 'UPLINE-START':
-            a = line - 1
-            b = 0
-            break
-
-        case 'UPLINE-END':
-            a = line - 1
-            b = 1000
-            break
-
-        default:
-            if (isFunction(fn)) {
-                const product = fn(ch, line)
-                if (isArray(product)) {
-                    [a,b] = product
-                }
-                else if (isObject(product)) {
-                    a = product.line
-                    b = product.ch
-                }
-            }
-            else if (isNumber(fn)) {
-               a = line
-               b = fn
-            }
-    }
+function setDisplayString(mode) {
+    const value = cmTextValue(this.codemirror)
     if (value) {
-        return [a,b]
+        this[mode] = value
+        this.displayString = value
     }
     else {
-        cm.setCursor(a,b)
+        console.log( 'hii doing something else' )
     }
 }
-function cmCursorOLD(cm, fn) {
-    const {line, ch} = cm.getCursor()
-    cm.setCursor(Pos(line, isFunction(fn) ? fn(ch) : fn))
+Vue.prototype.catchallmodmap = {
+    gg: (cm) => cmCursor(cm, 'DOCUMENT-START'),
+    G: (cm) => cmCursor(cm, 'DOCUMENT-END'),
+    A: (cm) => cmCursor(cm, 'LINE-END'),
+    o: cmToLineBottom,
+    O: cmToLineTop,
+    '0': (cm) => cmCursor(cmSprawl(cm, /(?<={)}/, {mode: 'ch'})),
+    '1': () => this.setDisplayString('htmlString'),
+    '2': () => this.setDisplayString('cssString'),
+    '3': () => this.setDisplayString('jsString'),
+    // '4': () => this.setDisplayString('computedHtml'),
+    '11097': (cm) => cm.setValue(''),
+    '12097': (cm) => {updateClipboard(cm.getValue()); cm.setValue('');},
+    '13097': () => console.log( 'zzzz22' ),
+    '12108': () => console.log( 'zzzzaa' ),
+    //modmap
+    gtt: (cm) => cmCursor(cm, cm.state.blockEnter),
+    // A:   {action: (cm) => cmCursor(cm, 'LINE-END'), mode: 'ENTER-INSERT-MODE'},
+    // o:   {action: cmToLineBottom, mode: 'ENTER-INSERT-MODE'},
+    // O:   {action: cmToLineTop, mode: 'ENTER-INSERT-MODE'},
+
+    su:  (cm) => speak(cmgetter(cm, 'UPLINE')),
+    sl:  (cm) => speak(cmgetter(cm, 'LINE')),
+    sb:  (cm) => speak(cmgetter(cm, 'BLOCK')),
+    sc:  (cm) => speak(cmgetter(cm, 'CURSOR')),
+    u: (cm) => cm.undo(),
+    r: (cm) => cm.redo(),
+    f: (cm) => cm.replaceRange('', ...cmgetter(cm, 'UPLINE-END-TO-LINE-END')),
+}
+Vue.prototype.colonmap = colonmap
+
+Vue.prototype.primaryMap = {
+    // 'Backspace': '',
+    'ShiftRight': cmToggleBuffer,
+    // 'ShiftLeft': '',
+    'Tab':       {action: cmTabCompletion, reset: true, preventDefault: true},
+    'ControlRight': exitBlock,
+    'AltRight':  enterBlock,
+    'Backspace': backspaceHandler,
+    // 'Semicolon':  {action: colonKeyHandler, preventDefault: true},
+    'Escape': escapeKeyHandler,
+    'Enter': enterKeyHandler,
+    'KeyI' : {action: keyIHandler}
+    // 'KeyA' : {action: keyAHandler}
 }
 
-function cmEditWrapper(cm, styleObject = {'FontSize': 20}) {
-    const el = cm.getWrapperElement()
-    console.log( el.style )
-    mergeInPlace(el.style, styleObject)
-    console.log( el.style )
-}
-function cmTabCompletion(cm) {
-    cm.state.tabCount += 1
-    if (cm.state.tabCount == 1) {
-        const match = this.insertString.trim()
-
-        if (!match) {
-            cm.replaceSelection(toSpaces(cm.getOption('tabSize')))
-            cm.state.tabCount = 0
-            return
+new Vue({
+    data() {
+        return vueDataObject
+    },
+    
+    watch: {
+        isIframe(val) { console.log( val ) },
+        yoo() {
+            return x
         }
-
-        const range = cm.findWordAt(cm.getCursor())
-        const word = cm.getRange(range.anchor, range.head)
-
-        if (word.startsWith('f')) {
-            cm.state.snippetString = jspymap['js']['fsnippet'](word.slice(1))
-            cmSnippetReplacement(cm, range, cm.state.snippetString)
+    },
+    
+    computed: {
+        computedOption() {
+            let match = search('^(?:create|gen(?:erate)?)', this.normalString)
+            if (match == 'gen') match = 'generate'
+            return match
+        },
+        // computedHtml,
+        computedStyleString() {
+            return this.styleString || Object.values(this.styles).join(snsn)
         }
-        else if (word in snippetmap) { // Snippet Expansion
-            cm.state.snippetString = snippetmap[word]
-            cmSnippetReplacement(cm, range, cm.state.snippetString)
-            
-        }
-        else {
-            const el = match.startsWith('.') ? 'div' : match
-            const classTag = match.startsWith('.') ? match.slice(1) : ''
-            const product = divify(el, '', classTag).replace(RegExp(el), el + ' ')
-            this.insertString = product
-            cm.operation(() => {
-
-                cm.replaceRange(product, range.anchor, range.head)
-                cmCursor(cm, range.anchor.ch + 2 + match.length)
-            })
-        }
-    }
-
-    else if (cm.state.snippetString) {
-        console.red( 'tab', cm.state.tabCount )
-        const items = cm.state.snippetString.split(snippetDelimiter)
-        const item = items[cm.state.tabCount - 1]
-        console.log( items, item )
-        let charIndex = item.length - item.search(/\n/) + cm.state.extraSnippetSpaces
-
-        cmCursor(cm, (ch, line) => {
-            if (item.includes('\n')) { // TODO
-                return [line + 1, charIndex]
-            }
-            return ch + item.length
+    },
+    methods: {
+        //fmet
+        revertCodeMirror,
+        createFrame,
+        toggleFrame,
+        gvfn,
+        setDisplayString,
+        getElement,
+        handlePromise,
+        buttonHandler,
+        load,
+        blurHandler,
+        focusHandler,
+        previewItems,
+        keyIHandler,
+        inoremapHandler,
+        primaryFirstAction,
+        cmWriteFactory,
+        enterInsertMode,
+        enterBlock,
+        exitBlock,
+        backspaceHandler,
+        colonKeyHandler,
+        enterVimMode,
+        escapeKeyHandler, 
+        enterKeyHandler,
+        executeColonCommand,
+        primaryKeyHandler,
+    },
+    
+    async mounted() {
+        this.codemirror = CodeMirror.fromTextArea(this.$refs.codemirror, {
+            pollInterval: 10000,
+            lineWrapping: true,
+            lineNumbers: true,
+            autofocus: true,
+            cursorBlinkRate: 0,
+            value: 'hello world', 
+            mode: 'javascript',
+            tabSize: 4,
         })
+        window.addEventListener('blur', this.blurHandler)
+        window.addEventListener('focus', this.focusHandler)
+        cmAddClass(this.codemirror, 'cm-fat-cursor')
+        cmInitializeBuffers(this.codemirror, BUFFERS)
+        this.codemirror.on('keydown', this.primaryKeyHandler);
 
-        if (cm.state.tabCount > items.length - 1) {
-            cm.state.tabCount = 0 
-            cm.state.snippetString = ''
-            this.insertString = ''
-            console.log( 'finished at snippet tab completion' )
+        // await sleep(1)
+        this.cmWriteFactory('p hi')
+
+        const ontick = () => {
+            this.displayString += 'hi'
         }
-    }
 
-    // cm.replaceRange(product, Codemirror.Pos(lineNumber, -1 * match.length))
-    // cm.replaceRange(product, ...cmRangeHelper4(0, -1 * match.length, 0, 0))
-    // cm.setCursor({line: lineNumber, ch: ch - product.length})
-}
-
-
-function cmRangeHelper5(cm, a = 0, b = 0, c = 0, d = 0) {
-    const {line, ch} = cm.getCursor()
-
-    if (isFunction(b)) b = b(ch, cm.getLine(line).length)
-    if (isFunction(d)) d = d(ch, cm.getLine(line).length)
-
-    return [
-        {line: line + a, ch: b},
-        {line: line + c, ch: d}
-    ]
-}
-
-function cmInitializeBuffers(cm, buffers, bufferIndex = 0) {
-    cmInitializeState(cm, {
-        buffers, 
-        bufferIndex,
-        tabCount: 0,
-        lastWord: '',
-        store: new Storage2({mode: String})
-    })
-
-    cm.state.buffers.forEach((buffer, i) => {
-        const text = getStorage(buffer, '')
-        cm.state[buffer] = CodeMirror.Doc(text, null)
-    })
-
-    const currentBuffer = getStorage('currentBuffer', DEFAULT_BUFFER) 
-    cm.state.bufferIndex = cm.state.buffers.indexOf(currentBuffer)
-    cmOpenBuffer(cm, currentBuffer)
-}
-function cmCursorToEnd(cm) {
-    cm.setCursor({line: cm.lastline(), ch: 1000})
-}
-
-function cmOpenBuffer(cm, buffer) {
-    cm.swapDoc(cm.state[buffer])
-}
-
-function cmToggleBuffer(cm) {
-    if (!cm.hasFocus()) return
-    const index = ++cm.state.bufferIndex % cm.state.buffers.length
-    const buffer = cm.state.buffers[index]
-    console.log( buffer , 'buffer name')
-    cmOpenBuffer(cm, buffer)
-    cmCursor(cm, 'DOCUMENT-END')
-}
-
-function cmInitializeState(cm, object) {
-    mergeInPlace(cm.state, object)
-}
-
-function keyAHandler(cm, e) {
-    if (this.insertMode) {
-        return
-    }
-
-    if (e.shiftKey) {
-        cmCursor(cm, 'LINE-END')
-    }
-    this.insertString = ''
-    this.enterInsertMode(cm)
-    e.preventDefault()
-}
-
-function keyIHandler(cm, e) {
-    if (this.insertMode) {
-        return
-    }
-
-    if (e.shiftKey) {
-        cmCursor(cm, 'LINE-START-SMART')
-    }
-    this.insertString = ''
-    this.enterInsertMode(cm)
-    e.preventDefault()
-}
-function previewItems() {
-
-}
+        let foo = await sleepclock({gift: this.color, bind: true, ontick, duration: 2000, increment: 500})
+        // console.log( foo, 'ffffin' )
+        // this.executeColonCommand(this.codemirror, 'gen vue') // WORKS
+        // this.cmWriteFactory(toDictionary.toString())
+        //fmo
+        // this.executeColonCommand(this.codemirror, 'jbin') // WORKS
+        // this.executeColonCommand(this.codemirror, 'jbin clipboard')  //WORKS
 
 
-function cmGrab(cm, arg) {
-    const [indentation, data] = cmgetter(cm, 'INDENT', 'LINE')
+    },
+}).$mount("#app")
 
-}
-function cmEditor(cm, mode) {
-    console.log( 'hi from cmeditor' )
-
-    const [indentation, data] = cmgetter(cm, 'INDENT', 'LINE')
-    console.log( indentation, data, 'from cm editor' )
-
-    let s = ''
-    let rangeMode = 'LINE-START-TO-LINE-END'
-    const start = jspymap['js']['const']
-
-    switch(mode) {
-        case 'DICT-OBJ': 
-        case 'DICT-LINE': 
-            s = sliceEditFactory(dobjParser, 'EQUALS', start)(data, mode)
-            break
-        case 'GRAB-REGEX':
-        case 'GRAB-QUOTE':
-            s = search(/\/.+?\/|(?<=\()[\'\"].*?(?<!\\)[\']/, data)
-            break
-        case 'GRAB-REGEX':
-            s = search(/\/.+?\/|(?<=\()[\'\"].*?(?<!\\)[\']/, data)
-            break
-    }
-    if (!s) {
-        console.red( 'NO MATCH at cmEditor for dobjparse')
-        return 
-    }
-    s = indent(s + sn, indentation)
-    cmReplaceRange(cm, s, rangeMode)
-}
-
-function cmRangeGetter(cm, mode) {
-    const line = cmgetter(cm, 'LINE-NUMBER')
-    function runner(mode) {
-        switch(mode) {
-            case 'DOCUMENT':
-                return [0, 0, cm.lastLine(), 1000]
-            case 'LINE-START-TO-LINE-END': 
-                return [line, 0, line, 1000]
-            case 'LINE-SMART-TO-END':
-                return [line, cmgetter(cm, 'INDENT'), line, 1000]
-        }
-    }
-    const r = runner(mode)
-    return [Pos(r[0], r[1]), Pos(r[2], r[3])]
-}
-function cmReplaceRange(cm, content, mode) {
-    cm.operation(() => {
-        cm.replaceRange(content, ...cmRangeGetter(cm, mode))
-        cm.scrollIntoView()
-    })
-}
-function changeIt() {
-	if (!document.styleSheets) return;
-    console.log( stringify(document.styleSheets ))
-    const sheet = document.styleSheets[1]
-    console.log( stringify(sheet) )
-	var rules = new Array();
-	if (sheet.cssRules)
-		rules = sheet.cssRules
-	else if (sheet.rules)
-		rules = sheet.rules
-	else return;
-    console.log( rules )
-	rules[rules.length-1].style.backgroundColor = '#EEF0F5';
-}
-// fn split has implicit trim
-function focusHandler(e) {
-    console.log( 'focushandler' )
-    console.log( e.timeStamp )
-    this.codemirror.focus()
-}
-
-function blurHandler(e) {
-    this.insertMode = false
-    console.log( 'blurhandler' )
-    console.log( e.timeStamp )
-    console.string( e )
-}
-function cmInterface(cm) {
-
-}
-function cmSubmitter(cm) {
-    console.log( 'submitting from cmsubmitter' )
-    // there needs to be a way to reset as well.
-    const text = cm.getValue()
-    cm.setValue('')
-    const tag = getPartitionTag(text)
-    cm.state.store.add(tag, text)
-    console.log( cm.state.store.value )
-}
-
-function getPartitionTag(s) {
-    return search('^' + Regex2(packmap3), s.trim())
-}
-
-function cmSetget(cm, parser) {
-    this.codemirror.setValue(parser(cm.getValue()))
-}
 </script>
+
 

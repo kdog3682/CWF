@@ -1,3 +1,34 @@
+
+const quotes = ['fly like a butterfly', 'oh yeah go for it', 'great!!!']
+const weathertemplatestr = 'The weather in %location is currently %temperature degrees %unit. The weather forecast looks to be %summary.'
+const darkskyapikey = 'b86e9ffad46f3868a670e8a4a0979753'
+
+    const regexitems = [
+        '(?:',
+        '(?=',
+        '(?<!',
+        '(?!',
+        '(?=',
+        '[a-z]',
+        '\\w+',
+        '\\s+',
+        '\\S+',
+        '\\n+',
+        '.*',
+        '.+',
+        '[^]',
+        '[\\w\\W]',
+    ]
+const fontFamilies = ['georgia', 'times', 'serif', 'monospace']
+const fontColors   = new Array(8).fill('000').map(generateColorShade)
+const colors = ['red', 'blue', 'black', 'green']
+
+const fontobject = {
+    'font': fontFamilies,
+    'size': [14, 15, 16, 17],
+    'color': fontColors,
+}
+const fontindexobject =    {font: 1, size: 2, color: 3}
 const cssreset = `
 * {
     box-sizing: border-box;
@@ -4896,8 +4927,14 @@ function mreplaceAdvanced(re, s) {
     return [s, storage.value]
 }
 
+const ipaddressurl = 'https://www.cloudflare.com/cdn-cgi/trace'
+
 function mreplace(...args) {
-    const parsers = [(s) => ['', s], (_, s) => ['', s], (_, a, b) => ['', [a, b]]]
+    const parsers = [
+        (s) => ['', s], 
+        (_, s) => ['', s], 
+        (_, a, b) => ['', [a, b]]
+    ]
 
     const flagDeterminer = (...innerArgs) => {
         let regex = isTrue(innerArgs[0]) ? args[0] : innerArgs[0]
@@ -4920,9 +4957,35 @@ function mreplace(...args) {
     return store ? [original, store.length == 1 ? store[0] : store] : [original, []]
 }
 
+function mrep3(regex, s, {parser = null, flags = 'g', once = false} = {}) {
+    if (once) {
+        flags = ''
+    }
+
+    if (!parser) parser = (...args) => {
+        return ['', smallify(args.slice(0, -2))]
+    }
+    const store = new DynamicStorage()
+
+    function parserHandler(...args) {
+        let [replaceValue, storeValue] = parser(...args)
+        // console.log( replaceValue, storeValue )
+        store.add(storeValue)
+        return replaceValue
+    }
+
+    s = replace(regex, parserHandler, s, flags).trim()
+
+    if (once) return [s, store.value[0]]
+    return [s, store.value]
+}
+
 function mrep2(regex, parser, s, flags = 'g') {
     //YES
-    if (!parser) parser = (_, a, b) => [a, [a, b]]
+    if (!parser) parser = (...args) => {
+        // console.red(args.slice(0, -2))
+        return ['', smallify(args.slice(0, -2))]
+    }
     const store = new DynamicStorage()
 
     function parserHandler(...args) {
@@ -5169,10 +5232,7 @@ async function requestAsync(url) {
 //how do u make a specific get requestwith fetch?
 //according to the api @ https://github.com/lukePeavey/quotable#list-tags, to get a list of tags
 function requestSync(url) {
-    const options = {
-        // method: 'GET'
-    }
-    return fetch(prepareUrl(url, options)).then((response) => {
+    return fetch(prepareUrl(url)).then((response) => {
         return isJsonResponse(response) ? response.json() : response.text()
     })
 }
@@ -13524,7 +13584,7 @@ function drep(
         sliceStart = '',
         sliceEnd = '',
         escape = false,
-        mode = 'wb',
+        mode = '',
         start = '',
         end = '',
     } = {}
@@ -13552,7 +13612,7 @@ function drep(
                 return dict[x.slice(0, -extra.length)]
             }
             else {
-                console.log( 'asdfasdf' )
+                console.error( 'asdfasdf' )
             }
         },
         s,
@@ -13756,6 +13816,7 @@ function prepareRegex(re, flags = null) {
     }
     else {
         if (flags == null) flags = getRegexFlag(re)
+            console.log( flags )
         return new RegExp(re, flags)
     }
 }
@@ -13849,7 +13910,16 @@ function singleItemParserJS(s) {
     G
 }
 
+function getLength(x) {
+    if (isNumber(x)) return Math.ceil(Math.log10(x + 1))
+    if (isString(x)) return x.length
+
+}
 function datestamp(mode = 'm-d-y', ...args) {
+    if (isNumber(mode)) {
+        if (getLength(mode) == 10) mode *= 1000
+        return new Date(mode)
+    }
     if (mode == Number) {
         return Date.now()
     }
@@ -15319,6 +15389,17 @@ class AdvancedStorage extends SimpleStorage {
     }
 }
 
+class NumberStorage {
+    constructor() {
+        this.store = {}
+    }
+    add(k, v) {
+        this.store[k] ? this.store[k] += v : this.store[k] = v
+        if (this.modulus) {
+            
+        }
+    }
+}
 class Storage2 extends SimpleStorage {
     constructor({mode = Array, fallback = null} = {}) {
         super()
@@ -15464,6 +15545,7 @@ function parens(s, type = 'parens') {
     if (type == 'tilda') return '`' + s + '`'
     if (type == 'braces') return '[' + s + ']'
 
+    if (type == 'arrify') return '[\n' + indent(toString(s)) + '\n]'
     if (type == 'newline-indent') return '\n' + indent(toString(s)) + '\n'
     if (type == 'quine') return 'console.log("' + s + '")' + sn + 'console.log(' + s + ')'
     if (type == 'newline-indent-div') return '<div>\n' + indent(toString(s)) + '\n</div>'
@@ -15478,8 +15560,8 @@ function parens(s, type = 'parens') {
 }
 
 function split(s, cat = '\\s', delimiter = '\\s', parsers = null, starting = 1) {
-    if (isArray(s)) return [s[0], s.slice(1)]
     if (isString(s)) s = s.trim()
+    if (isArray(s)) return [s[0], s.slice(1)]
 
     if (isRegExp(cat)) {
         let [a, ...b] = s.split(cat)
@@ -15526,6 +15608,10 @@ function split(s, cat = '\\s', delimiter = '\\s', parsers = null, starting = 1) 
     }
 
     switch (cat) {
+        case 'tag':
+            const items = search('(.*?) (.+)', s)
+            return items ? items : [s, null]
+            
         case 'dsn':
             return s.split(/  |\n/)
         case 'EQUALS':
@@ -15623,23 +15709,8 @@ function split(s, cat = '\\s', delimiter = '\\s', parsers = null, starting = 1) 
 }
 
 function looksLikeRegex(s) {
-    let ritems = [
-        '(?:',
-        '(?=',
-        '(?<!',
-        '(?!',
-        '(?=',
-        '[a-z]',
-        'w+',
-        's+',
-        'S+',
-        'n+',
-        '.*',
-        '.+',
-        '[^]',
-        '[\\w\\W]',
-    ]
-    return test(Regex(ritems, 'escape'), s)
+    const regex = Regex(regexitems, 'escape')
+    return test(regex, s)
 }
 
 function aggregate(re, text) {
@@ -15850,19 +15921,32 @@ function createConditionalFunction(fn, k, list) {
     return list.includes(k) ? fn : ph
 }
 function Accumulator2(s, map = packmap2) {
-    const text = pedit(s)
-    const regex = '\n+(?=^' + Regex2(map, { extend: '#' }) + '\\b)'
+    const text = s
+    // const text = pedit(s)
+    // const regex = '\n+(?=^' + Regex2(map, { extend: '#' }) + '\\b)'
+
+    const regex = '\n+' + Regex2(map, {
+        extend: '#', 
+        end: '\\b', 
+        wrap: 'pla'
+    })
+
     const store = new Store({ datestamp: true })
-    text.split(RegExp(regex, 'm')).forEach(runner)
+    const items = new Partitions(text).value
+    // const items = text.trim().split(RegExp(regex, 'm'))
+    // console.error( items )
+    console.log( items )
+    return
+    items.forEach(runner)
 
     function runner(s) {
         if (!s) return
         let items = s.split(/(?<=^\w+(?:\.\w+)?)\W+/)
         let [k, sector, v] = argfix(items, [true, null, true])
 
-        if (['reddit', 'notes'].includes(k)) {
-            v = trimBlock(v)
-        }
+        // if (['reddit', 'notes'].includes(k)) {
+            // v = trimBlock(v)
+        // }
 
         const parser = map[k]?.parser || map[k]
         const product = parser ? parser(v, sector) : s
@@ -17719,6 +17803,7 @@ function Regex2(
         capture = false,
         escape = false,
         startingSpaces = false,
+        wrap = null,
         join = '|',
     } = {}
 ) {
@@ -17779,6 +17864,14 @@ function Regex2(
     if (after) regex += after
     if (exceptions) {
         regex = replace('\\|' + Regex2(exceptions), '', regex)
+    }
+    if (wrap) {
+        switch(wrap) {
+        case 'nla': return parens(regex, 'nla')
+        case 'nlb': return parens(regex, 'nlb')
+        case 'pla': return parens(regex, 'pla')
+        case 'nla': return parens(regex, 'nla')
+        }
     }
     return regex
 }
@@ -19203,11 +19296,17 @@ const npdict = {
     zero: '0',
 }
 
-function replaceFactory(fn, ...args) {
-    return (s) => fn(s, ...args)
+function replaceFactory(dict) {
+   const regex = Regex2(dict) 
+   return (s) => {
+       return replace(regex, parser, s)
+   }
+}
+function drepFactory(fn, ...dicts) {
+    return (s) => fn(s, ...dicts)
 }
 
-const convertNumbersToParentheses = replaceFactory(drep9002, npdict)
+const convertNumbersToParentheses = drepFactory(drep9002, npdict)
 
 function percentChange(original, final) {
     return ((original - final) / original) * 100
@@ -23593,16 +23692,38 @@ const spaceractionmap = {
     forx:  'for (let i = $1; i < %2; i++)',
 }
 
-function templater(s, items) {
+function templater(template, items, regex = '%\\d') {
     let count = 0
+    if (isFunction(items)) {
+        return (s) => {
+            return replace(regex, items(s, count++), template, 'gm')
+        }
+    }
     function parser(x) {
         if (x == '%0') return items.join(' ')
-        return items[count++]
+        return isArray(items) ? items[count++] : items
     }
-    return replace('%\\d', parser, s, 'gm')
+    return replace(regex, parser, template, 'gm')
 }
 
-function templater2(s) {
+function templater3(template, x) {
+    let count = 0
+
+    return (s) => {
+
+        function parser(match) {
+            count += 1
+            console.log( match )
+
+            return s
+        }
+
+        if (isNumber(x)) s = s.slice(x)
+        return template.replace(/%\w*/g, parser)
+    }
+}
+
+function deletetemplater2(s) {
     let count = 0
     const delimiter = '%'
 
@@ -26049,11 +26170,39 @@ const linetypemap = {
     '    ': 'indented',
     '(?:def|function|const |let |if \\(|\\w+ =)|{|\\[': 'code',
 }
+
+function createCodePartitions(lines, list) {
+                let product = {
+                    template: assembly(groupTogetherSimple(lines, list))
+                }
+                return product
+}
+function classgetter(s, classFunction) {
+    const x = new classFunction(s)
+    if (x.hasOwnProperty('value')) {
+        return x.value
+    }
+
+    if (x.hasOwnProperty('format')) {
+        return classFunction.format(x)
+    }
+    console.log( 'asdfasdfasdf' )
+}
+class GeneralPartitions extends LineEdit2 {
+    constructor(s) {
+        // if line starts with a tagged word ...
+        // go until you find a non tag. 
+    }
+}
+
 class Partitions extends LineEdit2 {
     format(s) {
         return (new Partitions(s)).value
     }
-    constructor(s) {
+    constructor(s, {
+        create = createCodePartitions,
+        regexmap = linetypemap,
+    } = {}) {
         super(s, {
             track: false, 
             getInfo: false,
@@ -26065,14 +26214,9 @@ class Partitions extends LineEdit2 {
         this.match = null
         this.list = []
         this.groups = []
-        this.regexes = Object.entries(linetypemap)
+        this.regexes = Object.entries(regexmap)
         this.run()
-        let product = groupTogetherSimple(this.lines, this.list)
-
-        this.value = {
-            template: assembly(product)
-        }
-        // console.log( product )
+        this.value = create(this.lines, this.list)
     }
 
     runner(line, i, tabWidth, isEnter, isExit) {
@@ -27070,3 +27214,335 @@ function a2(s, content) {
 //a1 is a function that performs console.reverse.
 //a2 replaces the inner aspect of a vue.html page with a new div id=app.
 // console.log( a2(text, 'boo' ))
+
+// remove all of the comments. and also aggregate out ... what is in this file that is causing it to be so big. The dreps for sure. 
+
+
+// the way you phrase a question really matters. 
+// you have to do it in front of them. 
+// you have to do it in a way that inspires. 
+// 
+// to change the classification.
+// plan A. 
+// ta hui shuo bu ke yi.  
+// ask for advice. 
+// get to the bottom.
+// to change the billing. 
+function rainbow(numOfSteps, step) {
+    // This function generates vibrant, "evenly spaced" colours (i.e. no clustering). This is ideal for creating easily distinguishable vibrant markers in Google Maps and other apps.
+    // Adam Cole, 2011-Sept-14
+    // HSV to RBG adapted from: http://mjijackson.com/2008/02/rgb-to-hsl-and-rgb-to-hsv-color-model-conversion-algorithms-in-javascript
+    // src https://stackoverflow.com/questions/1484506/random-color-generator
+    var r, g, b;
+    var h = step / numOfSteps;
+    var i = ~~(h * 6);
+    var f = h * 6 - i;
+    var q = 1 - f;
+    switch(i % 6){
+        case 0: r = 1; g = f; b = 0; break;
+        case 1: r = q; g = 1; b = 0; break;
+        case 2: r = 0; g = 1; b = f; break;
+        case 3: r = 0; g = q; b = 1; break;
+        case 4: r = f; g = 0; b = 1; break;
+        case 5: r = 1; g = 0; b = q; break;
+    }
+    var c = "#" + ("00" + (~ ~(r * 255)).toString(16)).slice(-2) + ("00" + (~ ~(g * 255)).toString(16)).slice(-2) + ("00" + (~ ~(b * 255)).toString(16)).slice(-2);
+    return (c);
+}
+
+class Indexed2 {
+    constructor(props, options) {
+        this.mount(props, options)
+    }
+
+    mount(props, options) {
+        if (!props) return
+
+        const parser = (acc, item) => {
+            acc[item] = 0
+            return acc
+        }
+
+        this.store = props
+        if (isArray(options)) {
+            this.tracker = options.reduce((acc, item) => {
+                for (let [k,v] of Object.entries( this.store )) {
+                    const index = v.indexOf(item)
+                    if (index > -1) {
+                        acc[k] = index
+                        return acc
+                    }
+                }
+                acc[k] = 0
+                return acc
+            }, {})
+        }
+
+        else if (!options) {
+            this.tracker = Object.keys(this.store).reduce(parser, {})
+        }
+        
+        else {
+            this.tracker = options
+        }
+                       
+        this.defaultKey = Object.keys(this.store)[0]
+    }
+
+    now(key) {
+        if (!key) key = this.defaultKey
+        return this.store[key][this.tracker[key]]
+    }
+
+    next(key, increment = 1) {
+        if (!key) key = this.defaultKey
+        if (!this.store[key]) throw 'key not in indexed store'
+        const list = this.store[key]
+        const index = this.tracker[key]
+
+        index == list.length - 1 ?
+            this.tracker[key] = 0 :
+            this.tracker[key] += increment
+
+        console.log( list[index] )
+        return list[index]
+    }
+}
+
+// indexed = new Indexed2()
+// indexed.mount(fontobject, fontindexobject)
+// console.log( indexed )
+// console.log( indexed.next() )
+// console.log( indexed.next('size') )
+// console.log( indexed.next('size') )
+
+
+function getLocalJson(name) {
+    const getRunningScript = () => {
+        return decodeURI(new Error().stack.match(/([^ \n\(@])*([a-z]*:\/\/\/?)*?[a-z0-9\/\\]*\.js/ig)[0])
+    }
+
+    return fetch(getRunningScript() + "/../" + name + ".json")
+    .then(req => req.json())
+}
+
+// The win conditions are heavily limited. The value of the human spirit. Is pretty big.  
+//
+// stay in touch to Chenhua. Not for any reason, just for. We speak when we need something. There has to be honor in the procession. 
+
+// Bu shi. The ultimate helper. Ultimate defense. To be in a certain degree of debt. 
+// to understand the procession.
+
+const regexReplacementObject = {
+    csp: '(\\\\S+)',
+    wallu: '[^]+?',
+    cwallu: '([^]+?)',
+    cwall: '([^]*)',
+    cwp: '(\\\\w+)',
+    nwp: '\\\\w+',
+    cdp: '(\\\\d+)',
+    ncg: '(?:',
+    plb: '(?<=',
+    nlb: '(?<!',
+    nla: '(?!',
+    pla: '(?=',
+    la: '(?=',
+    lb: '(?<=',
+    cdotu: '(.*?)',
+    dotu: '.*?',
+    cdot: '(.*)',
+    cdazp: '([-.a-zA-Z]+)',
+    dazp: '[a-zA-Z-.]+',
+    cazp: '([a-zA-Z]+)',
+    azppp: '[a-zA-Z]{3,}',
+    azp: '[a-zA-Z]+',
+    // 'la\\S+': templater('(?=%)', 2),
+    '8': '*',
+    'q': '?',
+    '9': '(',
+    '0': ')',
+    '6': '^',
+    '4': '$',
+    'w': '\\w',
+    's': '\\s',
+    'S': '\\S',
+    'p': '+',
+    'd': '\\d',
+    'az': '[a-zA-Z]',
+}
+const transformlinemap = {
+    re: drepFactory(drep, regexReplacementObject)
+}
+function getGeoLocation() {
+    const geolocationurl = 'https://geolocation-db.com/json/'
+    return requestSync(url)
+
+}
+function getWeather() {
+   const url = 'https://api.darksky.net/forecast/%key/%coordinates'
+   
+   requestSync(geolocationurl).then(location => {
+       const uri = templater(url, {
+           key: darkskyapikey,
+           coordinates: location.latitude + ',' + location.longitude
+       })
+       return requestSync(uri)
+   })
+
+   const parse = (data) => {
+       const object = {
+           temperature: data.currently.temperature,
+           summary: data.currently.summary,
+       }
+       return object
+   }
+}
+function getWeatherInfoFactory(x) {
+    if (isObject(x)) {
+        return ({
+           temperature: x.currently.temperature,
+           summary: x.currently.summary,
+        })
+    }
+    if (x == 'sunset') {
+        return data => data.data[0].sunsetTime
+    }
+}
+function getSunset() {
+    return getWeather().then(data => speakify(data.data[0].sunsetTime))
+}
+function arrify(s) {
+    return parens(findall(/^\S.+/gm, s).map(quotify), 'arrify')
+}
+function transformLine(line, tag) {
+    if (!tag) {
+        ;[tag, line] = split(line, 'tag')
+    }
+
+    const action = transformlinemap[tag]
+    if (action && line) {
+        return action(line)
+    }
+    console.log( 'error at transforml ine no match' )
+}
+
+// console.log( templater('(?=%)', (x) => x.slice(2), '%') )
+
+
+accstr = `
+
+m i was quite sardonical and passively rude for no reason to a young man (salesperson) at Snipes Shoe store on 5th. "Do you have the Nike Revolutions for 49.99." "Do you know the shoes that I'm talking about." He had regarded me kindly, and I responded with this shit.
+
+m Not listening to jie962 on the initial tender of the increased electric bill. Kind of dismissively adding that I'll pay an extra 20 or 50 dollars, when the actual increase was +250 dollars. 
+putting my food
+
+m trying to act all smart and 'calculating' and saying 'every hour' can be calculated and I'll that much, when speaking to Ahjie about the excessive bill. I made this mistake as well, along time ago with Sue Biggins, over the autoclaving and some other things. 
+
+m eating spicy halal food, and then eating spicy jalapeno chips, and then drinking ginger ale caused some uncomfortable stomach acid.
+not brushing my teeth recently at night
+
+new
+i only use the heater from 11PM to 5AM. 
+i use hot water bags to buffer
+i feel angry about the news that I hear
+I need to avoid situations that will cause my irrational subconscious anger. There are some things which I should not explore.
+i need to only post extremely tangible questions on reddit learnprogramming.
+i think its correct to avoid monolithic structures. when starting out, be nimble and flexible.
+//copyParserMode should be written.
+//aggregatorMode.
+// I need to find a way to switch buffers faster.
+
+
+@chinese How do you pronounce 'Wong' in Chinese? 
+I keep wanting to pronounce it as how you pronounce 'Wang.' Should it be pronounced as 'Wown?'
+
+@frugal How do you calculate the energy expenditure of a space heater?
+
+I spoke to a customer rep at my electricity provider and said the following:
+
+- my heater is 1000w
+- price per kwh is 10 cents.
+- this means 1 hour of using my heater is 10 cents.
+
+She responded no, this is incorrect. You have to take into account the voltage as well.
+
+- The voltage of my heater is 100V. 
+
+How should I accurately be calcuating the expenditure?
+end
+
+i need to be sleeping ealier
+deprecate the metal food
+
+dont do things that are futile and cumbersome. One or the other is okay, but if something has both, then you have to wait until the environment or the surrounding conditions change. For instance, adding a basketball net to Sunset Park. The hoops dont really permit it based on their current architecture.
+
+neveruse burnerplates from 56th 422, logitech web cam, androide charger, extra vegetable peeler, organic protein
+
+whatever the approach, the final product has to be intuitive to use, without strange quirks that make you feel uncomfortable. Currently, what I'm making has that 'uncomfortable factor to it.
+
+
+parsing goodreads.
+again building up junk ... 
+
+`
+// To standardize the elements is something that needs to come soon. 
+
+// sc is a styleControler for the font thing that we have going on
+// console.log( Accumulator2(accstr) )
+
+// this.styleController = new Indexed2(fontobject, fontindexobject)
+// console.log( this.styleController )
+// a way to add additional items in.
+function generateColorShade(color, amount) {
+    amount = (amount + 1) * 5
+    // https://stackoverflow.com/questions/5560248/programmatically-lighten-or-darken-a-hex-color-or-rgb-and-blend-colors
+  color = color.replace(/^#/, '')
+  if (color.length === 3) {
+      color = color[0] + color[0] + color[1] + color[1] + color[2] + color[2]
+  }
+
+  let [r, g, b] = color.match(/.{2}/g);
+  ;[r, g, b] = [parseInt(r, 16) + amount, parseInt(g, 16) + amount, parseInt(b, 16) + amount]
+
+  r = Math.max(Math.min(255, r), 0).toString(16)
+  g = Math.max(Math.min(255, g), 0).toString(16)
+  b = Math.max(Math.min(255, b), 0).toString(16)
+
+  const rr = (r.length < 2 ? '0' : '') + r
+  const gg = (g.length < 2 ? '0' : '') + g
+  const bb = (b.length < 2 ? '0' : '') + b
+
+  return `#${rr}${gg}${bb}`
+}
+// console.log( (transformLine('dotula\\90', 're')))
+// i feel kind of lethargic right now. i wonder how i can get around this. working on an interesting aspect of the project.
+
+function splitarg(s, ...args) {
+    const store = []
+    let temp
+    if (!s) {
+        return new Array(args.length + 1).fill(null)
+    }
+    for (let arg of args) {
+        [s, temp] = mrep3(arg, s, {once: true})
+        store.push(temp)
+    }
+    return [s.trim(), store]
+}
+
+
+// console.log( mrep3('a', 'abc', {once: true}))
+// console.log( splitarg('like hi like cheese', 'hi', '(?:cheese|lsdfike)' ))
+// templateassembler lets you pick and choose from a raw text that gets imported in. u can pick by 
+
+function cmLoadExternalFile(cm, url) {
+    requestSync(url).then(text => {
+        cm.setValue(text)
+        cm.setOption('disableInput', true)
+        CodeMirror.signal({value: 'loaded'}, 'loadfile', 'z', 'y', 'x')
+        // CodeMirror.signal({value: 'loaded'}, 'loadfile')
+    })
+}
+// console.log( datestamp(1614240000 ))
+
+// 

@@ -368,6 +368,8 @@ mycwf = [
     'index.html',
     'vuecm2.html',
     'methods.js',
+    'vcodeframe.js',
+    'vpreview.js',
 ]
 
 abc = {  # d
@@ -10319,6 +10321,8 @@ def breaker(count, limit=10):
 
 
 def split(x, mode="once"):
+    if mode == 'lines':
+        return x.split('\n')
     delimiter = sn
     if isArray(x):
         if isArray(mode):
@@ -13246,8 +13250,6 @@ I know that '_' usually means private variable, not to be exposed in public API.
 I've also seen, '$$1' and '$$2' used quite frequently. Is there an implicit meaning to this particular nomenclature?
 
 
-ap ELI5 - What is a simple explanation for how a recursive descent parser works?
-
 
 @learnprogramming Is it okay to re-use a variable like this, or should intermediate constants be assigned?
 
@@ -13298,57 +13300,14 @@ Scenario A: 3 different websites all use the same library. However, each website
 
 Scenario B: I download the library locally and use it in my index.html. Next, I go into the library and add a function foo = (x) => console.log('hi'). This function is appended to the start of where the library begins. Does adding this item, cause the browser to need to recompile the library from scratch?
 
-@physics How do you calculate an electricity bill?
-
-I recieved an overwhelming electricity bill this month, and I am trying to figure out how it is calculated. 
-
-* 1 KWH = 17.6 cents (according to the electricity bill)
-* I'm using a Presto SpaceHeater which is listed as 1000W, and 105V.
-
-1000W for 1 hour should equal 1 KWH which equals 17.6 cents? 
-
-But this seems way too low. Does the 105V voltage also need to be taken into account?
-
-My bill came out to be around 250 dollars. (The actual bill is higher, but 250, is the delta difference from what last month was, and what this month was, and I attribute it to using a new space heater)
-
-Rounding 1 hour KWH to 20 cents, and assuming a use of 20 hours a day, that is 4 dollars per day. Times 1 month it comes out to 4 * 30 = 120 dollars. 
-
-This is still way short of the 250 bill. 
-
-Appreciate any advice you guys can give in where I might've gone wrong in these calculations.
 
 
+ap What are some things that beginner coders might do (and should avoid) , that more experienced coders would scold / chatise them for?
 
+reverse
+updel
 
-js how does the browser cache resources?
-
-Here are 3 different links which each point to the same resource:
-*
-*
-*
-
-Question 1 - 
-Question 2 - 
-// the source files are packaged together into a large file.
-// but for me, it is comfortable to have everything in a single file.
-// Hmm. They have a point.
-// To offer the services at a much discounted price. 
-// Asking questions there isn't fun anymore. Asking in vuejs. "You will know when you need it." Criticism. Of how I am doing things. 
-
-// A man plays a different role.
-// Many generations of people not having values. 
-// Taking pity ... 
-// I have not much to say to my dad. He is smart, but he doesn't have the same priorities. Making the same mistake over and over. 
-
-
-
-
-ap What are things that you have seen other coders do, that make you shake your head?
-
-@learnprogramming What are some things that beginner coders might do (and should avoid) , that more experienced coders would scold / chatise them for?
-
-
-How do you compile a website which has imports / exports? 
+js How do you compile a website which has imports / exports? 
 
     ---- index.html ----
     <script src='script.js'></script>
@@ -13379,27 +13338,8 @@ Online advice will often write, 'use gulp/browserify/commonjs/require/webpack/gr
 
 Really appreciate any help with this! It is something I have been trying to do for a long time now. 
 
-vue
 
-
-
-
-js how can i organize my file contents so that it will be easier for others to read 
-i have a large js file with utilities, helpers, and main functions all mixed together. Main functions are functions that should be their own file.
-
-The first step of this task I'm pretty sure is to get a list of the main functions. These will each become their own file.
-
-The second step is to import dependencies for each main function.
-
-// html and css (including generators)
-// organization
-// general utilities
-// math
-// generators
-
-Would you choose version 1 or version 2?
-
-Nesting of Status Objects:
+vue Would you choose version 1 or version 2?
 
 1:
     data() {
@@ -13422,8 +13362,6 @@ Nesting of Status Objects:
 
 
 
-`
-
 js one async function is causing a cascade of many other functions to have to be rewritten as async as well. Do you think async should be used in this case?
 
 A function 'executeCommand' is a controller for various functions. One of these functions, is an async function. 
@@ -13433,6 +13371,21 @@ To make it work, executeCommand would have to be written as async as well. Howev
 I am wondering if it is a good idea to accomodate the minority of functions which are async with the async/await syntax.
 
 The alternative is to simply keep everything as sync, and use nested callbacks for the minorial functions.
+
+
+@asknyc Is there any way to change my electricity billing rate? 
+
+I live in an apartment. The first floor of the apartment is commercial. My elecric rate (from Con-Edison) says 'EL2 Small Non-Residential.' 
+
+Is this accurate? I received an enormous bill this month. Same usage, at the previous place I lived, had a bill of about half the amount. Im wondering if it might have something to do with the current rate I am being charged at. 
+
+Thanks for your help.
+
+updel
+
+nsq Why arent electric utility companies classified as monopolies?
+
+I have been getting a huge electric bill lately. I kind of wanted to see if I had any negotiating power as a customer by choosing a different service. Unfortunately, I think I have zero negotiating power because for my area of Brooklyn, it appears there is only Con Edison as an electricity provider.
 
 
 
@@ -13521,8 +13474,10 @@ def superb(x, *functions, **kwargs):
         write(kwargs.get('write'), product)
     elif kwargs.get('append'):
         append(kwargs.get('append'), product)
-    elif product:
+    elif isPrimitive(product):
         print(  product  )
+    else:
+        pprint(product)
 
 def requester(url, *functions):
     return pipe(*functions)(request(url))
@@ -13532,7 +13487,6 @@ def requester(url, *functions):
 
 #  cabinet()
 #  Github.createRepo('CWF', standard = True)
-#  ask(questionstring1)
 #  reply()
 #  openFile('~/node_modules/codemirror-movie/dist/movie.js')
 
@@ -13688,4 +13642,264 @@ def cleaner(regex, s, fn):
 #  transferFunctions('cm')
 #  cabinet('drive')
 #  copyFile('english.js', '~/CWF')
+
+generateRegexTests = '''
+    view-source:https://www.wewishes.com/nofap-quotes-for-positive-mindset/
+    <blockquote class="wp-block-quote is-style-default"><p>You will be 1 in a million, literally.</p></blockquote>
+    https://forum.nofap.com/index.php?threads/motivational-fapstronaut-quotes.182776/
+<blockquote class="quoteContainer"><div class="quote">I&#039;ve made too much progress to let it all go to waste now.</div><div class="quoteExpand">Click to expand...</div></blockquote>
+'''
+
+def getEveryOther(lines):
+    return lines[1::2]
+
+
+def generateRegex(s):
+    a = '(?<=>)' 
+    b = '\w.*?'
+    c = '(?=</)'
+    regex = a + b + c
+    return replace(regex, '(.*?)', s)
+
+
+superb(generateRegexTests.strip(), dedent, lambda x: x.split('\n'), getEveryOther, lambda x: [generateRegex(el) for el in x])
+
+quotes = '''
+A mistake repeated more than once is a decision.
+
+Progress demands sacrifice.
+
+Drop by drop, we make the ocean.
+
+Fall down, get up, fall down, get up, fall down, get up, fall down, get up, fall down, get up, fall down, get up, fall down, get up, stay up, help others.
+
+You will be 1 in a million, literally.
+
+Never give up on a dream just because of the time it will take to accomplish it. The time will pass anyway.
+
+We gain the strength of the tempation we resist.
+
+If I quit now, I will soon be back to where I started. And when I started, I was desperately wishing to be where I am now.
+
+It matters not what someone is born, but what they grow to be.
+
+Whatever you are, be a good one.
+
+The obstacle is the path.
+
+The only way out, is through.
+
+What would you do, if you knew you could not fail?
+
+A smooth sea never made a skilled sailor.
+
+Be stronger than your excuse.
+
+It's when you start to get tired that the battle really begins.
+
+Confidence is not, "they will like me". Confidence is, "I'll be fine if they don't."
+
+Do it for the people who want to see you fail.
+
+Don't give up what you want most, for what you want now.
+
+I can't control who I am, but I can control the zero. Fuck the zero.
+
+The temptation to quit will be greatest just before you are about to succeed.
+
+"I don't jerk off", feels real good to say.
+
+Don't fap by yourself, let others do it for you.
+
+If you ever find yourself in a hole, the first thing you do is stop digging.
+
+It always seems impossible, until it's done.
+
+The wolf you feed speech.
+
+When there is no enemy within, the enemies outside can do you no harm.
+
+Sometimes the chains that bind us are not physical, but mental.
+
+You didn't come this far, to only come this far.
+
+If you build it, they will come.
+
+An addict who overcomes addiction is capable of accomplishing anything.
+
+The comeback must always be greater than the setback.
+
+One day or day one, you decide.
+
+If you are tired of starting over, stop giving up.
+
+
+"Never give up on a dream because of the time it will take to accomplish it. The time will pass anyway.
+-Earl Nightingale
+
+"The first step towards getting somewhere is to decide that you are not going to stay where you are."
+-Unknown
+
+"One does not discover new lands without consenting to lose sight of the shore for a very long time."
+-André Gide
+
+"The secret of change is to focus all of your energy not on fighting the old, but on building the new."
+-Socrates
+
+Good luck in your journey!
+SilverRogue, Jan 4, 2015#2
+Deleted Account and Don Gately like this.
+Jan 4, 2015#3
+thepersonathome
+thepersonathome
+Fapstronaut
+128
+8
+18
+"Man cannot remake without suffering, for he is both the marble and the sculptor"
+-Alexis Carrell
+thepersonathome, Jan 4, 2015#3
+Darthtyranius123 likes this.
+Jan 4, 2015#4
+spike1899
+spike1899
+Fapstronaut
+116
+1
+18
+"When men sow the wind it is rational to expect that they will reap the whirlwind."
+
+- Frederick Douglass
+
+"I say screw the past. Think about who you are today, and prepare yourself for who you will become tomorrow."
+
+- Unknown
+
+"I was once told you'd never find the path to your true self. But rather, you find your true self along the path."
+
+- Unknown
+spike1899, Jan 4, 2015#4
+Darthtyranius123 likes this.
+Jan 5, 2015#5
+karnaSingh
+karnaSingh
+Fapstronaut
+20
+2
+3
+"The happiness which comes from long practice, which leads to the end of suffering, which at first is like poison, but at last like nectar - this kind of happiness arises from the serenity of one's own mind."
+- Bhagavad Gita
+
+“Do thou fight for the sake of fighting, without considering happiness or distress, loss or gain, victory or defeat–and, by so doing, you shall never incur sin.”
+- Bhagavad Gita
+karnaSingh, Jan 5, 2015#5
+Deleted Account and ChristopherB like this.
+Jan 5, 2015#6
+MKMMJAG
+MKMMJAG
+Fapstronaut
+66
+7
+8
+"The Best Time to plant a tree was 20 years ago, the second best time is now".
+-Chinese Proverb
+"It is impossible to live without failing at something, unless you have lived so cautiously that you might as well not have lived at all - in which case, you fail by default."
+-J.K. Rowling
+"Get Busy Living or Get Busy Dying."
+-Shawshank Redemption
+
+Thanks guys for the quotes, some here have really helped me out, they are all insightful. I encourage people to post more, a simple quote can mean a lot to a person
+MKMMJAG, Jan 5, 2015#6
+Vihaga.w likes this.
+Jan 6, 2015#7
+stay_strong
+stay_strong
+Fapstronaut
+33
+4
+8
+Almost every successful person begins with two beliefs: the future can be better than the present, and I have the power to make it so.
+
+Failure is not falling down but refusing to get up
+-Chinese proverb
+
+The secret of change is to focus all of your energy, not on fighting the old, but on building the new.
+-Socrates
+'''
+
+
+
+def iterativeSearch(s, *regexes):
+    for regex in regexes:
+        match = search(regex, s)
+        if match:
+            return match
+
+def getDomainName(s):
+    a = 'https://(.*?)(?:$|/)'
+    b = '^.*?(?=$|/)'
+    return iterativeSearch(s, a, b)
+
+def parseRedditQuote(s):
+    left = '&lsquo; &ldquo; &#8216 &#8220;'
+    right = '&rdquo; &#8217; &#8221; \"'
+    both = '&bdquo; &quot; &apos; &#8218; &#8222; \"'
+    quoteChar = ''
+    pureQuoteWithOptionalAttributionRE = '^[\'\"].*?[\'\"](?: -.*)?$'
+    pureQuoteRE = '^[\'\"].*?[\'\"](?: -.*)?$'
+    quoteRE = '[\'\"].*?[\'\"]'
+    quoteWithOptionalAttributionRE = quoteChar + '.*?' + quoteChar + '(?: -.*)?'
+
+
+questionstring2 = '''
+vue How do you bind 'this' to the vue context?
+
+The snippet below has an error because 'this' refers to window, whereas I'm hoping for 'this' to be Vue's this.
+
+    Vue.prototype.fnmap = {
+        'foo': () => console.log(this) // references the wrong this
+    }
+
+How can I fix this problem?
+updel
+ap How do you check if a large file is safe?
+Normally, I rely on the functionality of google via: 
+
+> Google Drive can't scan this file for viruses. quotes_dataset.csv (157M) is too large for Google to scan for viruses. Would you still like to download this file?
+
+However, this time the file is too large.
+
+Would there be a way to scan the file for viruses via python / javascript? Are there any signals that might indicate a virus is present?
+
+Thanks!
+
+css Why does infinite scroll get a bad rep? 
+I've been implementing some functionality where the user scrolls to the end of the page, and once they hit the end, if there is more content, an ajax call is made, and more content is loaded. 
+
+I believe ... this is considered infinite scroll?
+
+If I am not to do it via this manner, what other techniques would there be of loading in more data?
+
+
+vue Might there be a neater way of writing this snippet?
+
+    <template v-show="computedHtml">
+        <div>stuff</div>
+    </template>
+
+    <template v-show="appMode == 'PREVIEW'>
+        <div>stuff</div>
+    </template>
+
+    <template v-show = "!computedHtml && appMode == 'DEFAULT'">
+        <div>stuff</div>
+    </template>
+
+It feels really redundant and I feel like there should be a better way of creating this effect.
+
+updel
+
+'''
+
+#  ask(questionstring2)
 Github(repo='CWF').update(mycwf)     #this is better

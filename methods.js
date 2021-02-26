@@ -1,3 +1,8 @@
+function activateQuoteSeries({items = quotes, limit = null, target = 'items'} = {}) {
+    this[target] = items
+    this.appMode = 'PREVIEW'
+}
+
     const buttonmap = {
         'generate': {
             'vue': vuelines.format,
@@ -11,10 +16,18 @@ const vueDataObject = {
                 insertString: '',
                 normalString: 'creat',
                 snippetString: '',
+                historyIndex: 0,
                 styles: {},
                 history: [],
                 computedHtml: '',
                 //fdata,
+                commandHistory: ['itemA', 'itemB', 'itemC'],
+                items: [],
+                quoteLibrary: null,
+                performTransformation: true,
+                fontValue: '',
+                sizeValue: '',
+                colorValue: '',
                 mountCount: 0,
                 isIframe: false,
                 buttonOptions: {
@@ -2798,6 +2811,10 @@ function cmgetter(cm, ...queries) {
 
     function runner(query) {
     switch(query) {
+        case 'WORD-RANGE': 
+            const range = cm.findWordAt(cursor)
+            return [range.anchor, range.head]
+
         case 'EXTRASPACES': return ' '.repeat(cm.getOption('tabSize') || 4)
         case 'TABSIZE': return cm.getOption('tabSize') || 4
         case 'spaces': return cm.getLine(cursor.line).match(/^ */)[0]
@@ -3065,7 +3082,6 @@ function primaryFirstAction(cm, e) {
 const nonLetterKeys = ['Shift', 'ArrowRight', 'ArrowLeft', 'ArrowDown', 'ArrowUp', 'Alt', 'Control', 'Meta']
 
 function primaryKeyHandler(cm, e) {
-    // console.log( cm.state.lastWord, 'lastword' )
 
     if (this.appMode != 'DEFAULT') {
         console.log( 'hi from appmode' )
@@ -3073,7 +3089,6 @@ function primaryKeyHandler(cm, e) {
     }
 
     if (this.colonKeyHandler(cm, e)) {
-        console.log( 'hii from colon' )
         return
     }
 
@@ -3134,11 +3149,19 @@ function primaryKeyHandler(cm, e) {
     else score = this.normalString
 
 
-    console.red( score )
-    const modmap = this.catchallmodmap[score]
+    console.red('SCORE',  score )
+    const modmap = this.modmap[score]
     if (modmap) {
+        console.log( 'matched at modmap!!!' )
         if (isFunction(modmap)) {
-            modmap.call(this, cm)
+            try {
+                modmap(cm)
+            }
+
+            catch(e) {
+                console.log( 'err', e )
+                modmap.call(this, cm)
+            }
         }
         else {
             modmap.action.call(this, cm)
@@ -3194,7 +3217,7 @@ function buttonHandler(key, name) {
 }
 
 function executeColonCommand(cm, s) {
-    console.log( s )
+    this.commandHistory.push(s)
     if (!s) return
     let [command, arg] = split(s, {default: [s, null]})
 
@@ -3202,6 +3225,64 @@ function executeColonCommand(cm, s) {
     let key, value, mode, promise, args
 
     switch(command) {
+        case 'motivateme':
+            this.activateQuoteSeries()
+            break
+        case 'date':
+        case 'time':
+        case 'weather':
+            colonmap[command]() 
+            break
+
+        case 'grab':
+            let clipboard, parser;
+            const parserString = Regex2(['arrify']);
+            [arg, clipboard, parser] = splitarg(arg, 'clip', parserString)
+            if (!arg) return console.log( 'no grab match' )
+
+            switch (parser) {
+                case 'arrify': parser = arrify; break;
+            }
+            arg = transformLine(arg, 're')
+            console.red( arg, 'grab arg' )
+            if (looksLikeRegex(arg)) {
+                const handle = (s) => {
+                    if (s.length < 50) {
+                        console.log( s )
+                        throw 'LENGTH OF CLIPBOARD TEXT TOO SHORT'
+                    }
+                    return s
+                }
+
+                readClipboard().then(handle).then(text => {
+                    const items = findall(arg, text)
+                    if (exists(items)) {
+                        const product = parser(items)
+                        if (clipboard) {
+                            updateClipboard(product)
+                        }
+                        else {
+                            cm.setValue(product)
+                        }
+                    }
+                    else {
+                        console.log( text, 'no match at grab based on the given regex, arg', 'for finding all' )
+                    }
+                }).catch((error) => {
+                    // const text = cm.getValue()
+                    console.log( error )
+                    // this error should say the text isnt long enuf.
+                })
+            }
+            else {
+                // else its not a regex. maybe it does smth based on the cursor as well what buttons are pushed. something along the lines of a templateasembler.
+                console.log( arg )
+                console.log( 'no idea what cmgrab does' )
+                // cmGrab(cm, arg)
+            }
+            break 
+        case 'gt':
+           break
         case 'gen':
             command = 'generate'
         case 'generate':
@@ -3226,6 +3307,14 @@ function executeColonCommand(cm, s) {
             cm.setValue(cm.state.store.get(arg))
             break
         /* ------------------------------------------------------ */
+        case 'config':
+            let match
+            if (match = search(/this\.(\w+) = (.*)/, arg)) {
+                this[match[0]] = match[1]
+                console.log('setting a new local this value')
+            }
+            break
+
         case "set":
             cm.state.store.set(arg, cm.getValue())
             break
@@ -3244,9 +3333,9 @@ function executeColonCommand(cm, s) {
         case "style":
             cmEditStyle(cm, arg)
             break
-        case "grab":
-            cmGrab(cm, arg)
-            break
+        // case "grab":
+            // cmGrab(cm, arg)
+            // break
         case "merge":
             ;[key, s] = split(arg)
             const obj = window[key]
@@ -3318,11 +3407,37 @@ function ieixecuteColonCommandOLLD(s, cm) {
     }
 }
 
+// presi
+// the feeling of evil.
+// the feeling of being seen. 
+// maintain the boundaries... To have the skill. 
+// The more money you have, the dirtier the game becomes. 
+// The people who are in charge. The people ... 
+// Bu xu yao. The war. is real.     
+
+function generateStyleString({font = null, size = null, color = null} = {}) {
+    if (font) font = 'font-family: ' + font + '; '
+    if (size) size = 'font-size: ' + size + '; '
+    if (color) color = 'color: ' + color + '; '
+    return font + size + color
+}
+
+function computedStyleString() {
+    return generateStyleString({
+        font: this.fontValue,
+        color: this.colorValue,
+        size: this.sizeValue,
+    })
+}
+
+function cmEditStyle(cm, font, size, color) {
+    const s = generateCssString({font, size, color})
+    cm.markText(...cmRangeGetter(cm, 'DOCUMENT'), {'css' : s})
+}
 
 function cmEditStyle(cm, s) {
     const obj = {
         'css': cssParser3(s)
-        // 'css': cssParser3(cmgetter(cm, 'NORMAL-STRING'))
     }
     cm.markText(...cmRangeGetter(cm, 'DOCUMENT'), obj)
 }
@@ -3331,6 +3446,7 @@ function cmEditStyle(cm, s) {
 
 
 function enterKeyHandler(cm, e) {
+    let line = this.insertString
     this.insertString = ''
 
     if (e.key == 'Enter' && e.ctrlKey) {
@@ -3350,6 +3466,14 @@ function enterKeyHandler(cm, e) {
 
 
     if (this.insertMode) {
+        if (this.performTransformation) {
+            let transformed = transformLine(line)
+            if (transformed) {
+                cm.operation(() => {
+                    cmReplaceLine(cm, cmgetter(cm, 'SPACES') + transformed)
+                })
+            }
+        }
         cm.state.tabCount = 0
         cm.state.lastWord = ''
         return
@@ -3375,6 +3499,7 @@ function escapeKeyHandler(cm) {
     if (!this.insertMode) {
         this.normalString = ''
         this.isColon = false
+        this.historyIndex = 0
     }
 
     this.insertMode = false
@@ -3393,14 +3518,27 @@ function colonKeyHandler(cm, e) {
         } 
 
         else if (e.key == 'ArrowUp' || e.key == 'ArrowDown') {
-            if (exists(this.history)) {
-                console.log( 'arrows' )
+
+            console.log( 'arrow activation' )
+            if (exists(this.commandHistory)) {
                 const increment = e.key == 'ArrowUp' ? 1 : -1
-                const p = this.history[this.history.length - this.historyIndex + increment]
+                this.historyIndex += increment
+                const index = this.commandHistory.length + this.historyIndex
+                const p = this.commandHistory[index]
+
                 if (p) {
-                    console.log( 'success' )
+                    console.log( 'success', this.historyIndex )
                     this.historyIndex += increment
                     this.normalString = p
+                }
+                else {
+                    this.historyIndex -= increment
+                    if (index == -1) {
+                        this.historyIndex = 0
+                    }
+                    else if (index > this.commandHistory.length)
+                        this.historyIndex = 0
+                    }
                 }
             }
         }
@@ -4060,3 +4198,10 @@ function getElement(id, mode) {
 // 
 // it's not impossible. 
 // 
+// trigger the change at the end of the sentence. Upon the enter mark. It feels like my keyboard is slowly breaking apart. 
+
+// The feeling that something is ... askew.
+// Accurate data is necessary to make informed decisions.
+
+
+// no amount of money is enough to satisfy ... certain things. 

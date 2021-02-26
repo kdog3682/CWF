@@ -1,4 +1,12 @@
-<script src="./vue.js"></script><script src="./codemirror.js"></script><script src="./utils.js"></script><script src="./methods.js"></script><link rel="stylesheet" type="text/css" href="./codemirror.css"/><link rel="stylesheet" type="text/css" href="./styles.css"/><script src="./vcodeframe.js"></script><script>
+<script src="./vue.js"></script><script src="./codemirror.js"></script><script src="./utils.js"></script><script src="./methods.js"></script><link rel="stylesheet" type="text/css" href="./codemirror.css"/><link rel="stylesheet" type="text/css" href="./styles.css"/>
+<script src="./vcodeframe.js"></script>
+<script src="./vpreview.js"></script>
+<script>
+
+
+function ontick32() {
+    this.displayString += 'hi'
+}
 
 function toggleFrame() {
     console.log( 'toggling the frame' )
@@ -19,13 +27,19 @@ function revertCodeMirror() {
 </script>
 
 <div id="app" @keyup.ctrl.enter.prevent="toggleFrame">
-    <component is="style">{{computedStyleString}}</component>
+    <!-- <component is="style">{{computedStyleString}}</component>-->
     
-    <section v-show="computedHtml">
-    <p>codeframe</p>
-    <codeframe @close="revertCodeMirror"  :mount-count="mountCount" :computed-html="computedHtml"/>
+    <div v-show="computedHtml">
+        <p>codeframe</p>
+        <codeframe @close="revertCodeMirror"  :mount-count="mountCount" :computed-html="computedHtml"/>
+    </div>
+
+    <section v-show="appMode == 'PREVIEW'">
+        <h1>Preview Mode</h1>
+        <preview @close="appMode == 'DEFAULT'" :items="items"/>
     </section>
-    <div v-show = "!computedHtml">
+
+    <section v-show = "!computedHtml && appMode == 'DEFAULT'">
 
         <textarea ref="codemirror"></textarea>
         <section v-show="displayEvalStore" a=component>
@@ -47,24 +61,27 @@ function revertCodeMirror() {
         <p style="font-family: monospace;">{{ computedHtml }}</p>
 
     <!-- component -->
+    <!-- it is a small component to bring up the buttons-->
     <div style="height: 100">
-    <transition name="fade">
-        <div v-show="computedOption">
-            <button @click="buttonHandler(computedOption, button)" v-for="button in buttonOptions[computedOption]">
-                {{button}}
-            </button>
-        </div>
-    </transition>
+        <transition name="fade">
+            <div v-show="computedOption">
+                <button @click="buttonHandler(computedOption, button)" v-for="button in buttonOptions[computedOption]">
+                    {{button}}
+                </button>
+            </div>
+        </transition>
     </div>
 
 
-    </div>
+    </section>
 </div>
 
 
 <script>
 
 const Pos = CodeMirror.Pos
+CodeMirror.commands.goLineUp = null
+CodeMirror.commands.goLineDown = null
 CodeMirror.commands.selectAll = null
 // createElement('style', fadestring + snsn + opacitykfstring)
 
@@ -83,6 +100,8 @@ const colonmap = {
       set: (cm, arg) => cm.state.store.set(arg, cm.getValue()),
       edit: (cm, arg) => cm.setValue(cm.state.store.get(arg)),
       date: PersonalAssistant.date,
+      weather: () => getWeather().then(getWeatherInfoFactory),
+      sunset:  () => getWeather().then(getWeatherInfoFactory('sunset')),
       time: PersonalAssistant.time,
       wc:   clipboardWordCount,
       toframe: (cm) => this.htmlText = cm.getValue(),
@@ -142,7 +161,22 @@ function setDisplayString(mode) {
         console.log( 'hii doing something else' )
     }
 }
-Vue.prototype.catchallmodmap = {
+function cmReplaceEntity(cm) {
+    cm.replaceRange('', ...cmgetter(cm, 'WORD-RANGE'))
+// cm word-range replaces at the current word. this mimics the functionality of ',r' on vim.
+}
+function getVueMaps() {
+
+    this.modmap = {
+
+    'q': () => this.fontValue = this.styleController.next('font'),
+    'w': () =>  this.sizeValue = this.styleController.next('size'),
+    'e': () =>  this.colorValue = this.styleController.next('color'),
+    ',e': () => console.log('suppers'),
+    ',r': {
+        action: cmReplaceEntity,
+        mode: 'ENTER-INSERT-MODE'
+    },
     gg: (cm) => cmCursor(cm, 'DOCUMENT-START'),
     G: (cm) => cmCursor(cm, 'DOCUMENT-END'),
     A: (cm) => cmCursor(cm, 'LINE-END'),
@@ -170,6 +204,7 @@ Vue.prototype.catchallmodmap = {
     u: (cm) => cm.undo(),
     r: (cm) => cm.redo(),
     f: (cm) => cm.replaceRange('', ...cmgetter(cm, 'UPLINE-END-TO-LINE-END')),
+    }
 }
 Vue.prototype.colonmap = colonmap
 
@@ -194,25 +229,28 @@ new Vue({
     },
     
     watch: {
-        isIframe(val) { console.log( val ) },
-        yoo() {
-            return x
+        computedStyleString(val) {
+            console.log( val, 'HIII!!!' )
+            cmEditStyle(this.codemirror, val)
         }
     },
     
     computed: {
+
+        computedStyleString,
         computedOption() {
             let match = search('^(?:create|gen(?:erate)?)', this.normalString)
             if (match == 'gen') match = 'generate'
             return match
         },
         // computedHtml,
-        computedStyleString() {
-            return this.styleString || Object.values(this.styles).join(snsn)
-        }
+        // computedStyleString() {
+            // return this.styleString || Object.values(this.styles).join(snsn)
+        // }
     },
     methods: {
         //fmet
+        getVueMaps,
         revertCodeMirror,
         createFrame,
         toggleFrame,
@@ -256,24 +294,24 @@ new Vue({
         window.addEventListener('focus', this.focusHandler)
         cmAddClass(this.codemirror, 'cm-fat-cursor')
         cmInitializeBuffers(this.codemirror, BUFFERS)
+
+        this.styleController = new Indexed2(fontobject, fontindexobject)
         this.codemirror.on('keydown', this.primaryKeyHandler);
+        this.codemirror.on('loadExternalFile', (e) => {
+            console.log( e )
+            console.log( 'loading external!' )
+        })
+        this.getVueMaps()
 
         // await sleep(1)
         this.cmWriteFactory('p hi')
 
-        const ontick = () => {
-            this.displayString += 'hi'
-        }
-
-        let foo = await sleepclock({gift: this.color, bind: true, ontick, duration: 2000, increment: 500})
-        // console.log( foo, 'ffffin' )
+        // let foo = await sleepclock({bind: true, ontick, duration: 2000, increment: 500})
         // this.executeColonCommand(this.codemirror, 'gen vue') // WORKS
         // this.cmWriteFactory(toDictionary.toString())
         //fmo
         // this.executeColonCommand(this.codemirror, 'jbin') // WORKS
         // this.executeColonCommand(this.codemirror, 'jbin clipboard')  //WORKS
-
-
     },
 }).$mount("#app")
 
